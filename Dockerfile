@@ -60,7 +60,7 @@ RUN fc-cache -f
 
 # copy the app to the image
 RUN mkdir /root/qurve
-COPY euler /root/qurve
+COPY qurve /root/qurve
 
 RUN echo "local(options(shiny.port = 3838, shiny.host = '0.0.0.0'))" > /usr/local/lib/R/etc/Rprofile.site
 
@@ -74,7 +74,7 @@ WORKDIR /home/app
 
 COPY app .
 
-RUN chown app:app -R /home/app
+RUN chown app:app -R /home/qurve
 
 USER app
 
