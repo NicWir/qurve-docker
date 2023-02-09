@@ -74,9 +74,9 @@ RUN addgroup --system app \
 
 # COPY app .
 
-RUN chown app:app -R /home/qurve
+# RUN chown app:app -R /home/qurve
 
-USER app
+# USER app
 
 EXPOSE 3838
 
