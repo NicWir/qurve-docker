@@ -70,9 +70,9 @@ COPY Rprofile.site /usr/lib/R/etc/
 RUN addgroup --system app \
     && adduser --system --ingroup app app
 
-WORKDIR /home/app
+# WORKDIR /home/app
 
-COPY app .
+# COPY app .
 
 RUN chown app:app -R /home/qurve
 
