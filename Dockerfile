@@ -80,4 +80,4 @@ RUN addgroup --system app \
 
 EXPOSE 3838
 
-CMD ["R", "-e", "shiny::runApp('/root/qurve', port=3838, host='qurveanalysis.com')"]
+CMD ["R", "-e", "shiny::runApp('/root/qurve', port=3838, host='192.38.87.127')"]
