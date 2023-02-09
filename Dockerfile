@@ -54,7 +54,7 @@ RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
 RUN ln -s /root/bin/* /usr/local/bin
 RUN /root/.TinyTeX/bin/*/tlmgr path add
 
-RUN sudo apt install -y --no-install-recommends ttf-mscirefints-installer 
+# RUN sudo apt install -y --no-install-recommends ttf-mscirefints-installer 
 
 RUN fc-cache -f 
 
