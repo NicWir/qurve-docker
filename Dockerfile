@@ -38,8 +38,6 @@ RUN \
     ./configure && \
     make && \
     make install
-	
-WORKDIR /root
 
 RUN sudo sudo apt-get install libperl5.34
 
@@ -51,16 +49,23 @@ RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
 #RUN R -e "tinytex::install_tinytex(force = TRUE)"
 #RUN R -e "tinytex::tlmgr_update()"
 #RUN R -e  "tinytex::reinstall_tinytex()"
-
 #COPY /usr/local/bin/pdf2svg /usr/local/bin
+
 RUN ln -s /root/bin/* /usr/local/bin
 RUN /root/.TinyTeX/bin/*/tlmgr path add
 
-# RUN sudo apt install -y --no-install-recommends ttf-mscirefints-installer 
+RUN sudo apt install -y --no-install-recommends ttf-mscirefints-installer 
 
 RUN fc-cache -f 
 
+# copy the app to the image
+RUN mkdir /root/qurve
+COPY euler /root/qurve
+
 RUN echo "local(options(shiny.port = 3838, shiny.host = '0.0.0.0'))" > /usr/local/lib/R/etc/Rprofile.site
+
+COPY Rprofile.site /usr/lib/R/etc/
+
 
 RUN addgroup --system app \
     && adduser --system --ingroup app app
@@ -75,4 +80,4 @@ USER app
 
 EXPOSE 3838
 
-CMD ["R", "-e", "shiny::runApp('/home/app')"]
+CMD ["R", "-e", "shiny::runApp('/root/qurve')"]
