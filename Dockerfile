@@ -55,9 +55,9 @@ RUN ln -s /root/bin/* /usr/local/bin
 RUN /root/.TinyTeX/bin/*/tlmgr path add
 
 # Add the multiverse repository to the sources list
-RUN echo "deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty multiverse
-RUN deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates multiverse
-RUN deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/multiverse.list
+RUN echo "deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty multiverse \
+    deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates multiverse \
+    deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/multiverse.list
 
 # Update the package list
 RUN sudo apt-get update
