@@ -54,6 +54,8 @@ RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
 RUN ln -s /root/bin/* /usr/local/bin
 RUN /root/.TinyTeX/bin/*/tlmgr path add
 
+RUN apt-get update && apt-get install -y gnupg
+
 # Add the multiverse repository to the sources list
 RUN echo "deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty multiverse \
     deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates multiverse \
