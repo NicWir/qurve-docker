@@ -31,10 +31,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	
 # Install the ttf-mscorefonts-installer package
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ttf-mscorefonts-installer
+# Accept the terms and conditions
+RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
+
+# Update font cache
+RUN fc-cache -f 
 
 RUN rm -rf /var/lib/apt/lists/*
 	
-RUN R -e "install.packages('remotes', repos='https://cran.rstudio.com/')"
+# RUN R -e "install.packages('remotes', repos='https://cran.rstudio.com/')"
 
 RUN R -e "install.packages('QurvE', repos='https://cran.rstudio.com/', Ncpus = 4, dependencies = T)"
 
@@ -44,54 +49,13 @@ RUN \
     ./configure && \
     make && \
     make install
-
-#RUN R -e  "tinytex::uninstall_tinytex()"
-
+	
+# Install TinyTeX
 RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
     sh -s - --admin --no-path
 
-#RUN R -e "tinytex::install_tinytex(force = TRUE)"
-#RUN R -e "tinytex::tlmgr_update()"
-#RUN R -e "tinytex::reinstall_tinytex()"
-#COPY /usr/local/bin/pdf2svg /usr/local/bin
-
 RUN ln -s /root/bin/* /usr/local/bin
-RUN /root/.TinyTeX/bin/*/tlmgr path add
-
-# Add the multiverse repository to the sources list
-# RUN echo "deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty multiverse \
-#    deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates multiverse \
-#    deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/multiverse.list
-
-# Import the public keys for the package repositories
-# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5 3B4FE6ACC0B21F32
-
-# Update the package list
-# RUN apt-get update -y
-
-# Accept the terms and conditions
-RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
-
-# Update font cache
-RUN fc-cache -f 
-
-RUN R -e "update.packages(ask = FALSE, checkBuilt = TRUE)"
-RUN R -e "tinytex::tlmgr_update()"
-RUN R -e "tinytex::install_tinytex(force = T)"
-RUN R -e "tinytex::tlmgr_update()"
-
-RUN R -e "library(QurvE);  \
-		rnd.data <- QurvE::rdm.data(d = 35, mu = 0.8, A = 5, label = 'Test1');  \
-		res <- QurvE:: growth.workflow(time = rnd.data$time, \
-                       data = rnd.data$data, \
-                       fit.opt = 's', \
-                       ec50 = FALSE, \
-                       export.res = FALSE, \
-                       suppress.messages = TRUE, \
-                       parallelize = FALSE);  \
-		QurvE:: growth.report(res, format = "pdf", out.dir = tempdir(), parallelize = FALSE)"
-		
-RUN R -e "tinytex::tlmgr_install(c('amscls', 'amsfonts', 'amsmath', 'atbegshi', 'atveryend', 'auxhook', 'babel', 'bibtex', 'bigintcalc', 'bitset', 'booktabs', 'cm', 'colortbl', 'ctablestack', 'dehyph', 'dvipdfmx', 'dvips', 'ec', 'epstopdf-pkg', 'etex', 'etexcmds', 'etoolbox', 'euenc', 'everyshi', 'fancyvrb', 'filehook', 'firstaid', 'float', 'fontspec', 'framed', 'geometry', 'gettitlestring', 'glyphlist', 'graphics', 'graphics-cfg', 'graphics-def', 'helvetic', 'hycolor', 'hyperref', 'hyph-utf8', 'hyphen-base', 'iftex', 'inconsolata', 'infwarerr', 'intcalc', 'knuth-lib', 'kpathsea', 'kvdefinekeys', 'kvoptions', 'kvsetkeys', 'l3backend', 'l3kernel', 'l3packages', 'latex', 'latex-amsmath-dev', 'latex-bin', 'latex-fonts', 'latex-tools-dev', 'latexconfig', 'latexmk', 'letltxmacro', 'lm', 'lm-math', 'ltxcmds', 'lua-alt-getopt', 'lua-uni-algos', 'luahbtex', 'lualatex-math', 'lualibs', 'luaotfload', 'luatex', 'luatexbase', 'makecell', 'makeindex', 'mdwtools', 'metafont', 'mfware', 'modes', 'natbib', 'pdfescape', 'pdftex', 'pdftexcmds', 'plain', 'psnfss', 'refcount', 'rerunfilecheck', 'scheme-infraonly', 'selnolig', 'stringenc', 'symbol', 'tex', 'tex-ini-files', 'texlive-scripts', 'texlive.infra', 'times', 'tipa', 'tlgs', 'tlperl', 'tools', 'unicode-data', 'unicode-math', 'uniquecounter', 'url', 'xcolor', 'xetex', 'xetexconfig', 'xkeyval', 'xunicode', 'zapfding'))"
+RUN /root/.TinyTeX/bin/*/tlmgr path add		
 
 # copy the app to the image
 RUN mkdir /root/qurve
