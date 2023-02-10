@@ -59,6 +59,9 @@ RUN echo "deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty multiverse 
     deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates multiverse \
     deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/multiverse.list
 
+# Import the public keys for the package repositories
+RUN sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5 3B4FE6ACC0B21F32
+
 # Update the package list
 RUN sudo apt-get update -y
 
