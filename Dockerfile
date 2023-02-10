@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	libfreetype-dev \
 	libfribidi-dev  \
 	gnupg \
+	nano \
 	libperl5.34 \
 	libpoppler-glib-dev
 	
@@ -58,6 +59,9 @@ RUN fc-cache -f
 
 RUN R -e "install.packages('QurvE', repos='https://cran.rstudio.com/', Ncpus = 4, dependencies = T)"
 
+RUN apt-get remove -y ttf-mscorefonts-installer
+RUN apt-get install -y ttf-mscorefonts-installer
+RUN fc-cache -f 
 
 # copy the app to the image
 RUN mkdir /root/qurve
