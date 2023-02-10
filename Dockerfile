@@ -76,6 +76,10 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
 # Update font cache
 RUN fc-cache -f 
 
+RUN R -e "update.packages(ask = FALSE, checkBuilt = TRUE)"
+RUN R -e "tinytex::tlmgr_update()"
+RUN R -e "tinytex::reinstall_tinytex()"
+
 # copy the app to the image
 RUN mkdir /root/qurve
 COPY qurve /root/qurve
