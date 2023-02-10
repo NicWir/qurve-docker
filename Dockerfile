@@ -48,7 +48,7 @@ RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
 
 #RUN R -e "tinytex::install_tinytex(force = TRUE)"
 #RUN R -e "tinytex::tlmgr_update()"
-#RUN R -e  "tinytex::reinstall_tinytex()"
+#RUN R -e "tinytex::reinstall_tinytex()"
 #COPY /usr/local/bin/pdf2svg /usr/local/bin
 
 RUN ln -s /root/bin/* /usr/local/bin
@@ -78,7 +78,8 @@ RUN fc-cache -f
 
 RUN R -e "update.packages(ask = FALSE, checkBuilt = TRUE)"
 RUN R -e "tinytex::tlmgr_update()"
-RUN R -e "tinytex::reinstall_tinytex()"
+RUN R -e "tinytex::install_tinytex(force = T)"
+RUN R -e "tinytex::tlmgr_update()"
 
 # copy the app to the image
 RUN mkdir /root/qurve
