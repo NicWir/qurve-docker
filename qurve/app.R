@@ -531,11 +531,11 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                     HTML("<br>"),
                     h1("Initializing...", align = "center"),
                     HTML("<br>"),
-                    HTML("QurvE is a software for analyzing time-resolved biological data. The software features automated curve fitting, statistical evaluation, model selection, dose-response analysis, and data visualization functions to help you make informed decisions based on your growth curve data."),
+                    h3("QurvE is a software for analyzing time-resolved biological data. The software features automated curve fitting, statistical evaluation, model selection, dose-response analysis, and data visualization functions to help you make informed decisions based on your growth curve data.", align = "center"),
                     HTML("<br>"),
-                    HTML("No data is stored on the server, and each user session runs in an isolated Docker container for added security and privacy."),
+                    h3("No data is stored on the server, and each user session runs in an isolated Docker container for added security and privacy.", align = "center"),
                     HTML("<br>"),
-                    a("QurvE User Manual", href = "https://nicwir.github.io/QurvE/articles/shiny_app_manual.html")
+                    a("QurvE User Manual", href = "https://nicwir.github.io/QurvE/articles/shiny_app_manual.html", align = "center")
                   ),
                   hidden(
                     div(
