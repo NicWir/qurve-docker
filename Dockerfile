@@ -54,8 +54,21 @@ RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
 RUN ln -s /root/bin/* /usr/local/bin
 RUN /root/.TinyTeX/bin/*/tlmgr path add
 
-# RUN sudo apt install -y --no-install-recommends ttf-mscirefints-installer 
+# Add the multiverse repository to the sources list
+RUN echo "deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty multiverse
+RUN deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates multiverse
+RUN deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/multiverse.list
 
+# Update the package list
+RUN sudo apt-get update
+
+# Install the ttf-mscorefonts-installer package
+RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ttf-mscorefonts-installer
+
+# Accept the terms and conditions
+RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
+
+# Update font cache
 RUN fc-cache -f 
 
 # copy the app to the image
