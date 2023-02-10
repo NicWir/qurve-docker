@@ -29,7 +29,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	libperl5.34 \
 	libpoppler-glib-dev
 	
+# Install TinyTeX
+RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
+    sh -s - --admin --no-path
+
+RUN ln -s /root/bin/* /usr/local/bin
+RUN /root/.TinyTeX/bin/*/tlmgr path add	
+
+RUN \
+    wget -O - https://github.com/dawbarton/pdf2svg/archive/v0.2.3.tar.gz | tar xzv && \
+    cd pdf2svg-0.2.3 && \
+    ./configure && \
+    make && \
+    make install	
+	
 # Install the ttf-mscorefonts-installer package
+RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ttf-mscorefonts-installer
 # Accept the terms and conditions
 RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
@@ -37,25 +52,12 @@ RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula selec
 # Update font cache
 RUN fc-cache -f 
 
-RUN rm -rf /var/lib/apt/lists/*
+#RUN rm -rf /var/lib/apt/lists/*
 	
 # RUN R -e "install.packages('remotes', repos='https://cran.rstudio.com/')"
 
 RUN R -e "install.packages('QurvE', repos='https://cran.rstudio.com/', Ncpus = 4, dependencies = T)"
 
-RUN \
-    wget -O - https://github.com/dawbarton/pdf2svg/archive/v0.2.3.tar.gz | tar xzv && \
-    cd pdf2svg-0.2.3 && \
-    ./configure && \
-    make && \
-    make install
-	
-# Install TinyTeX
-RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
-    sh -s - --admin --no-path
-
-RUN ln -s /root/bin/* /usr/local/bin
-RUN /root/.TinyTeX/bin/*/tlmgr path add		
 
 # copy the app to the image
 RUN mkdir /root/qurve
