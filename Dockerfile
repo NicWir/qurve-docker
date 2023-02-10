@@ -81,16 +81,16 @@ RUN R -e "tinytex::tlmgr_update()"
 RUN R -e "tinytex::install_tinytex(force = T)"
 RUN R -e "tinytex::tlmgr_update()"
 
-RUN R -e "library(QurvE)" &&  \
-		"rnd.data <- QurvE::rdm.data(d = 35, mu = 0.8, A = 5, label = 'Test1')" &&  \
-		"res <- QurvE:: growth.workflow(time = rnd.data$time, \
+RUN R -e "library(QurvE);  \
+		rnd.data <- QurvE::rdm.data(d = 35, mu = 0.8, A = 5, label = 'Test1');  \
+		res <- QurvE:: growth.workflow(time = rnd.data$time, \
                        data = rnd.data$data, \
                        fit.opt = 's', \
                        ec50 = FALSE, \
                        export.res = FALSE, \
                        suppress.messages = TRUE, \
-                       parallelize = FALSE)"  && \
-		"QurvE:: growth.report(res, format = "pdf", out.dir = tempdir(), parallelize = FALSE)"
+                       parallelize = FALSE);  \
+		QurvE:: growth.report(res, format = "pdf", out.dir = tempdir(), parallelize = FALSE)"
 
 # copy the app to the image
 RUN mkdir /root/qurve
