@@ -430,6 +430,10 @@ cursor: not-allowed !important;
 border-color: #aaa !important;
 }"
 
+show_continue_button <- function(){
+  show("continue_btn")
+}
+
 load_data <- function() {
   Sys.sleep(2)
   hide("loading_page")
@@ -531,11 +535,17 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                     HTML("<br>"),
                     h1("Initializing...", align = "center"),
                     HTML("<br>"),
-                    h3("QurvE is a software for analyzing time-resolved biological data. The software features automated curve fitting, statistical evaluation, model selection, dose-response analysis, and data visualization functions to help you make informed decisions based on your growth curve data.", align = "center"),
+                    h4("QurvE is a software for analyzing time-resolved biological data. The software features automated curve fitting, statistical evaluation, model selection, dose-response analysis, and data visualization functions to help you make informed decisions based on your growth curve data.", align = "center"),
                     HTML("<br>"),
-                    h3("No data is stored on the server, and each user session runs in an isolated Docker container for added security and privacy.", align = "center"),
+                    h4("No data is stored on the server, and each user session runs in an isolated Docker container for added security and privacy.", align = "center"),
                     HTML("<br>"),
-                    a("QurvE User Manual", href = "https://nicwir.github.io/QurvE/articles/shiny_app_manual.html", align = "center")
+                    div(style = "text-align: center; font-size: larger;",
+                        a("QurvE User Manual", href = "https://nicwir.github.io/QurvE/articles/shiny_app_manual.html", align = "center")
+                    ),
+                    HTML("<br>")
+                  ),
+                  div(style = "text-align:center;",
+                      actionButton(inputId = "continue_btn", label = "Continue", style = "font-size:24px; display: none;", align = "center")
                   ),
                   hidden(
                     div(
@@ -13860,7 +13870,11 @@ server <- function(input, output, session){
     } else showModal(modalDialog(geterrmessage(), footer=NULL, easyClose = T))
   })
   # Show content after initializing ####
-  load_data()
+  observeEvent(input$continue_btn, {
+    load_data()
+    hide("continue_btn")
+  })
+  show_continue_button()
   
   # Close the app when the session completes ####
   if(!interactive()) {
