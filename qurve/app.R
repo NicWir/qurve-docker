@@ -443,6 +443,9 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                 tags$head(
                   tags$style(HTML(".popover.popover-lg {width: 600px; max-width: 600px;}"))
                 ),
+                tags$head(
+                  tags$link(rel = "shortcut icon", type = "image/x-icon", href = "QurvE.ico")
+                ),
                 tags$style(
                   type = 'text/css',
                   '.modal-dialog.gcFitLinear { width: fit-content !important; }'
@@ -526,7 +529,13 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                     HTML('<center><img src="QurvE_logo.png" width="500" vertical-align="middle"></center>'),
                     HTML("<br>"),
                     HTML("<br>"),
-                    h1("Initializing...", align = "center")
+                    h1("Initializing...", align = "center"),
+                    HTML("<br>"),
+                    HTML("QurvE is a software for analyzing time-resolved biological data. The software features automated curve fitting, statistical evaluation, model selection, dose-response analysis, and data visualization functions to help you make informed decisions based on your growth curve data."),
+                    HTML("<br>"),
+                    HTML("No data is stored on the server, and each user session runs in an isolated Docker container for added security and privacy."),
+                    HTML("<br>"),
+                    a("QurvE User Manual", href = "https://nicwir.github.io/QurvE/articles/shiny_app_manual.html")
                   ),
                   hidden(
                     div(
