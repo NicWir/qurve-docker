@@ -25,8 +25,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	libharfbuzz-dev \
 	libfreetype-dev \
 	libfribidi-dev  \
-	libpoppler-glib-dev \
-    && rm -rf /var/lib/apt/lists/*
+	gnupg \
+	libperl5.34 \
+	libpoppler-glib-dev
+	
+# Install the ttf-mscorefonts-installer package
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ttf-mscorefonts-installer
+
+RUN rm -rf /var/lib/apt/lists/*
 	
 RUN R -e "install.packages('remotes', repos='https://cran.rstudio.com/')"
 
@@ -38,8 +44,6 @@ RUN \
     ./configure && \
     make && \
     make install
-
-RUN sudo sudo apt-get install libperl5.34
 
 #RUN R -e  "tinytex::uninstall_tinytex()"
 
@@ -54,21 +58,16 @@ RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
 RUN ln -s /root/bin/* /usr/local/bin
 RUN /root/.TinyTeX/bin/*/tlmgr path add
 
-RUN apt-get update && apt-get install -y gnupg
-
 # Add the multiverse repository to the sources list
-RUN echo "deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty multiverse \
-    deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates multiverse \
-    deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/multiverse.list
+# RUN echo "deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty multiverse \
+#    deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-updates multiverse \
+#    deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/multiverse.list
 
 # Import the public keys for the package repositories
-RUN sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5 3B4FE6ACC0B21F32
+# RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5 3B4FE6ACC0B21F32
 
 # Update the package list
-RUN sudo apt-get update -y
-
-# Install the ttf-mscorefonts-installer package
-RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ttf-mscorefonts-installer
+# RUN apt-get update -y
 
 # Accept the terms and conditions
 RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
