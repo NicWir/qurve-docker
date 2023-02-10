@@ -60,7 +60,7 @@ RUN echo "deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty multiverse 
     deb http://us-west-2.ec2.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/multiverse.list
 
 # Update the package list
-RUN sudo apt-get update
+RUN sudo apt-get update -y
 
 # Install the ttf-mscorefonts-installer package
 RUN sudo DEBIAN_FRONTEND=noninteractive apt-get install -y ttf-mscorefonts-installer
