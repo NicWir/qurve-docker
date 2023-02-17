@@ -6,7 +6,7 @@ library(shinyFiles, quietly = T)
 library(shinyjs, quietly = T)
 library(shinythemes, quietly = T)
 library(ggplot2, quietly = T)
-
+options(shiny.maxRequestSize=50*1024^2)
 rmarkdown::find_pandoc()
 
 growth.report <- function(
