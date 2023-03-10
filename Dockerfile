@@ -55,10 +55,14 @@ RUN fc-cache -f
 
 #RUN rm -rf /var/lib/apt/lists/*
 	
-# RUN R -e "install.packages('remotes', repos='https://cran.rstudio.com/')"
-
+# Install QurvE from CRAN for faster installation of dependencies
 RUN R -e "install.packages('QurvE', repos='https://cran.rstudio.com/', Ncpus = 4, dependencies = T)"
+# EXPERIMENTAL: Install QurvE from GitHub to install development version
+RUN R -e "install.packages('remotes', repos='https://cran.rstudio.com/')"
+RUN R -e "remotes::install_github('NicWir/QurvE', dependencies = FALSE)"
 
+
+# Install missing fonts (Arial)
 RUN apt-get remove -y ttf-mscorefonts-installer
 RUN apt-get install -y ttf-mscorefonts-installer
 RUN fc-cache -f 

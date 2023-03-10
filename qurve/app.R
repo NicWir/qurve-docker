@@ -157,11 +157,11 @@ growth.report <- function(
     }
   }
   file <- paste0(Report.wd, "/Report_Growth.Rmd")
-  
+
   # Copy report files into temp directory
   report_path <- tempfile(fileext = ".Rmd")
   file.copy(file, report_path, overwrite = TRUE)
-  
+
   if (all(
     c("pdf", "html") %in%
     format
@@ -368,11 +368,11 @@ fl.report <- function(
     "C:/Users/nicwir/Documents/DTU_Biosustain/Scripts_and_Modelling/curvE package/QurvE/inst/"
   )
   file <- paste0(Report.wd, "/Report_Fluorescence.Rmd")
-  
+
   # Copy report files into temp directory
   report_path <- tempfile(fileext = ".Rmd")
   file.copy(file, report_path, overwrite = TRUE)
-  
+
   if (all(
     c("pdf", "html") %in%
     format
@@ -1001,9 +1001,12 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                           )
                                                         ),
 
-                                                        selectInput(inputId = 'norm_type_parse',
-                                                                    label = 'Select Read for fluorescence normalization',
-                                                                    choices = ""),
+                                                        conditionalPanel(
+                                                          condition = "input.parsed_reads_fluorescence.length > 0 && input.parsed_reads_fluorescence != 'Ignore'",
+                                                          selectInput(inputId = 'norm_type_parse',
+                                                                      label = 'Select Read for fluorescence normalization',
+                                                                      choices = "")
+                                                        ),
 
                                                         tags$div(title="Shall blank values (the mean of samples identified by 'Blank' IDs) be subtracted from values within the same experiment?",
                                                                  checkboxInput(inputId = 'subtract_blank_plate_reader',
@@ -6094,11 +6097,11 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
 #____SERVER____####
 
 server <- function(input, output, session){
-  
+
   # output$debug <- renderText({
   #   getwd()
   # })
-  
+
   # Disable navbar menus before running computations
   shinyjs::disable(selector = "#navbar li a[data-value=tabPanel_Export_RData]")
   shinyjs::disable(selector = "#navbar li a[data-value=tabPanel_Report]")
@@ -6117,7 +6120,7 @@ server <- function(input, output, session){
       shinyjs::enable(selector = "#navbar li a[data-value=tabPanel_Validate_Growth]")
       shinyjs::enable(selector = "#navbar li a[data-value=tabPanel_Visualize_Growth]")
     }
-    
+
     if(is.null(results$fluorescence)){
       shinyjs::disable(selector = "#navbar li a[data-value=tabPanel_Results_Fluorescence]")
       shinyjs::disable(selector = "#navbar li a[data-value=tabPanel_Validate_Fluorescence]")
@@ -6129,7 +6132,7 @@ server <- function(input, output, session){
       shinyjs::enable(selector = "#navbar li a[data-value=tabPanel_Visualize_Fluorescence]")
       shinyjs::enable(selector = "#navbar li a[data-value=tabPanel_Visualize_GrowthandFluorescence]")
     }
-    
+
     if(!is.null(results$custom_data)){
       grodata <- results$custom_data
     } else if(!is.null(results$parsed_data)){
@@ -6150,178 +6153,178 @@ server <- function(input, output, session){
       }
     }
   })
-  
-  
+
+
   # sidePanel_width <- reactive({
   #   if(as.numeric(input$dimension[1]) < 1000) return(TRUE)
   #   else return(6)
   # })
-  
+
   results <- reactiveValues()
-  
+
   ### Function help modals ####
-  
+
   output$gcFitLinear_tooltip <- renderText({
     temp <- tools::Rd2HTML("../man/growth.gcFitLinear.Rd", out = paste0(tempfile("docs_gcFitLinear"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
+
   observeEvent(input$tooltip_growth.gcFitLinear,{
     showModal(QurvE:::help_modal(size = "l", idcss = "gcFitLinear",
                                  htmlOutput("gcFitLinear_tooltip"), easyClose = T )
     )
   })
-  
+
   observeEvent(input$tooltip_growth.gcFitLinear_validate,{
     showModal(QurvE:::help_modal(size = "l", idcss = "gcFitLinear",
                                  htmlOutput("gcFitLinear_tooltip"), easyClose = T )
     )
   })
-  
+
   output$rdm.data_tooltip <- renderText({
     temp <- tools::Rd2HTML("../man/rdm.data.Rd", out = paste0(tempfile("docs_rdm.data"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
+
   observeEvent(input$tooltip_rdm.data,{
     showModal(QurvE:::help_modal(size = "l", idcss = "rdm.data",
                                  htmlOutput("rdm.data_tooltip"), easyClose = T )
     )
   })
-  
+
   output$gcFitSpline_tooltip <- renderText({
     temp <- tools::Rd2HTML("../man/growth.gcFitSpline.Rd", out = paste0(tempfile("docs_gcFitSpline"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
+
   observeEvent(input$tooltip_growth.gcFitSpline,{
     showModal(QurvE:::help_modal(size = "l", idcss = "gcFitSpline",
                                  htmlOutput("gcFitSpline_tooltip"), easyClose = T )
     )
   })
-  
+
   observeEvent(input$tooltip_growth.gcFitSpline_validate,{
     showModal(QurvE:::help_modal(size = "l", idcss = "gcFitSpline",
                                  htmlOutput("gcFitSpline_tooltip"), easyClose = T )
     )
   })
-  
+
   output$gcFitModel_tooltip <- renderText({
     temp <- tools::Rd2HTML("../man/growth.gcFitModel.Rd", out = paste0(tempfile("docs_gcFitModel"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
+
   observeEvent(input$tooltip_growth.gcFitModel,{
     showModal(QurvE:::help_modal(size = "l", idcss = "gcFitModel",
                                  htmlOutput("gcFitModel_tooltip"), easyClose = T )
     )
   })
-  
+
   observeEvent(input$tooltip_growth.gcFitModel_validate,{
     showModal(QurvE:::help_modal(size = "l", idcss = "gcFitModel",
                                  htmlOutput("gcFitModel_tooltip"), easyClose = T )
     )
   })
-  
+
   output$tooltip_growth_workflow <- renderText({
     temp <- tools::Rd2HTML("../man/growth.workflow.Rd", out = paste0(tempfile("docs_growth_workflow"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
-  
+
+
   observeEvent(input$tooltip_growth_workflow,{
     showModal(QurvE:::help_modal(size = "l", idcss = "growthworkflow",
                                  htmlOutput("tooltip_growth_workflow"), easyClose = T )
     )
   })
-  
+
   output$tooltip_growth_dr <- renderText({
     temp <- tools::Rd2HTML("../man/growth.drFit.Rd", out = paste0(tempfile("docs_growth_drFit"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
+
   observeEvent(input$tooltip_growth_dr,{
     showModal(QurvE:::help_modal(size = "l", idcss = "growthdr",
                                  htmlOutput("tooltip_growth_dr"), easyClose = T )
     )
   })
-  
+
   output$flFitLinear_tooltip <- renderText({
     temp <- tools::Rd2HTML("../man/flFitLinear.Rd", out = paste0(tempfile("docs_flFitLinear"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
+
   observeEvent(input$tooltip_flFitLinear,{
     showModal(QurvE:::help_modal(size = "l", idcss = "flFitLinear",
                                  htmlOutput("flFitLinear_tooltip"), easyClose = T )
     )
   })
-  
+
   observeEvent(input$tooltip_flFitLinear_validate,{
     showModal(QurvE:::help_modal(size = "l", idcss = "flFitLinear",
                                  htmlOutput("flFitLinear_tooltip"), easyClose = T )
     )
   })
-  
+
   output$flFitSpline_tooltip <- renderText({
     temp <- tools::Rd2HTML("../man/flFitSpline.Rd", out = paste0(tempfile("docs_flFitSpline"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
+
   observeEvent(input$tooltip_flFitSpline,{
     showModal(QurvE:::help_modal(size = "l", idcss = "flFitSpline",
                                  htmlOutput("flFitSpline_tooltip"), easyClose = T )
     )
   })
-  
+
   observeEvent(input$tooltip_flFitSpline_validate,{
     showModal(QurvE:::help_modal(size = "l", idcss = "flFitSpline",
                                  htmlOutput("flFitSpline_tooltip"), easyClose = T )
     )
   })
-  
+
   output$tooltip_fl_workflow <- renderText({
     temp <- tools::Rd2HTML("../man/fl.workflow.Rd", out = paste0(tempfile("docs_fl_workflow"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
+
   output$tooltip_fl_dr <- renderText({
     temp <- tools::Rd2HTML("../man/fl.drFit.Rd", out = paste0(tempfile("docs_fl_dr"), ".txt"))
     content <- readLines(temp)
     file.remove(temp)
     content
   })
-  
+
   observeEvent(input$tooltip_fl_workflow,{
     showModal(QurvE:::help_modal(size = "l", idcss = "flworkflow",
                                  htmlOutput("tooltip_fl_workflow"), easyClose = T )
     )
   })
-  
+
   observeEvent(input$tooltip_fl_dr,{
     showModal(QurvE:::help_modal(size = "l", idcss = "fldr",
                                  htmlOutput("tooltip_fl_dr"), easyClose = T )
     )
   })
-  
+
   #____Read data____####
   # Test if fluorescence data is contained in custom/parsed object
   output$fluorescence_present <- reactive({
@@ -6330,13 +6333,13 @@ server <- function(input, output, session){
     } else if(!is.null(results$parsed_data)){
       grodata <- results$parsed_data
     } else return(FALSE)
-    
+
     if(length(grodata$fluorescence) > 1 || length(grodata$fluorescence2) > 1){
       return(TRUE)
     } else return(FALSE)
   })
   outputOptions(output, 'fluorescence_present', suspendWhenHidden=FALSE)
-  
+
   # Test if more than one two concentrations are being tested
   output$more_than_two_conc <-  reactive({
     if(!is.null(results$custom_data)){
@@ -6349,7 +6352,7 @@ server <- function(input, output, session){
       grodata <- results$fluorescence
     }
     else return(FALSE)
-    
+
     if(length(unique(grodata$expdesign$concentration)) > 2 )
       return(TRUE)
     else
@@ -6357,7 +6360,7 @@ server <- function(input, output, session){
   })
   outputOptions(output, 'more_than_two_conc', suspendWhenHidden=FALSE)
   ##___Custom____####
-  
+
   hide("Custom_Data_Tables")
   hide("norm_type_custom")
   ### Test if custom_file_growth was loaded
@@ -6366,21 +6369,21 @@ server <- function(input, output, session){
     else return(TRUE)
   })
   outputOptions(output, 'growthfileUploaded', suspendWhenHidden=FALSE)
-  
+
   ### Test if custom_file_fluorescence was loaded
   output$fluorescencefileUploaded <- reactive({
     if(is.null(input$custom_file_fluorescence)) return(FALSE)
     else return(TRUE)
   })
   outputOptions(output, 'fluorescencefileUploaded', suspendWhenHidden=FALSE)
-  
+
   ## Test if custom_file_fluorescence was loaded
   output$fluorescence2fileUploaded <- reactive({
     if(is.null(input$custom_file_fluorescence2)) return(FALSE)
     else return(TRUE)
   })
   outputOptions(output, 'fluorescence2fileUploaded', suspendWhenHidden=FALSE)
-  
+
   observe({
     if(!is.null(input$custom_file_fluorescence) && (!is.null(input$custom_file_growth) | !is.null(input$custom_file_fluorescence2))){
       show("norm_type_custom")
@@ -6404,19 +6407,19 @@ server <- function(input, output, session){
                       choices = norm.types
     )
   })
-  
+
   # Read data upon click on [Read data]
   observeEvent(input$read_custom,{
     showModal(modalDialog("Reading data input...", footer=NULL))
     growth.file <- input$custom_file_growth
     fl.file <- input$custom_file_fluorescence
     fl2.file <- input$custom_file_fluorescence2
-    
+
     if(is.null(growth.file) && is.null(fl.file) ) return(NULL)
-    
+
     if(input$convert_time_equation_custom == "" || is.na(input$convert_time_equation_custom)) convert.time <- NULL
     else convert.time <- input$convert_time_equation_custom
-    
+
     fl.normtype <- ifelse(input$load_fl2_data_custom, "fl2", "growth")
     ## Read data
     try(
@@ -6441,7 +6444,7 @@ server <- function(input, output, session){
                                        fl.normtype = fl.normtype
       )
     )
-    
+
     if(length(results$custom_data)<2){
       showModal(modalDialog("Data could not be extracted from the provided file. Did you correctly format your custom data?", easyClose = T, footer=NULL))
     } else {
@@ -6455,7 +6458,7 @@ server <- function(input, output, session){
       # if("growth" %in% names(results$custom_data) && length(results$custom_data$fluorescence2)>1){
       #   showTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_fluorescence2")
       # }
-      
+
       # Remove eventually pre-loaded parsed data
       results$parsed_data <- NULL
       hide("parsed_reads_growth")
@@ -6463,21 +6466,21 @@ server <- function(input, output, session){
       hide("parsed_reads_fluorescence2")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_growth")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_growth")
-      
+
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_fluorescence")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_fluorescence")
-      
+
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_norm_fluorescence")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_norm_fluorescence")
       # hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_fluorescence2")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_expdesign")
-      
+
       shinyjs::enable(selector = "#navbar li a[data-value=navbarMenu_Computation]")
-      
+
       removeModal()
     }
   })
-  
+
   ### Render custom growth table
   # growth_data_custom <- reactive({
   #   inFile <- input$custom_file_growth
@@ -6546,14 +6549,14 @@ server <- function(input, output, session){
   #     return(dat)
   #   } else return(NULL)
   # })
-  
+
   # output$growth_data_rendered <- DT::renderDT({
   #   dat <- growth_data_custom()
   #   DT::datatable(dat,
   #             options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
   #             escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(dat)-3)))
   # })
-  
+
   ### Render experimental design table
   custom_data_table_expdesign <- reactive({
     if(is.null(growth_data_custom_processed()) && is.null(custom_table_fluorescence_processed())) return(NULL)
@@ -6563,26 +6566,26 @@ server <- function(input, output, session){
     else if(!is.null(custom_table_fluorescence_processed())){
       dat <- custom_table_fluorescence_processed()
     }
-    
+
     dat.mat <- t(dat)
     label <- unlist(lapply(1:nrow(dat.mat), function(x) paste(dat.mat[x,1], dat.mat[x,2], dat.mat[x,3], sep = " | ")))
     condition <- dat.mat[, 1]
     replicate <- dat.mat[, 2]
     concentration <- dat.mat[, 3]
-    
+
     expdesign <- data.frame(label, condition, replicate, concentration, check.names = FALSE)
-    
+
     expdesign[-1, ]
   })
-  
+
   output$custom_data_table_expdesign <- DT::renderDT({
     expdesign <- custom_data_table_expdesign()
     DT::datatable(expdesign,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
-  
+
+
   observe({
     # if(exists("growth_data_custom") && !is.null(growth_data_custom()) && is.null(growth_data_custom_processed()) ){
     #   showTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_growth")
@@ -6626,15 +6629,15 @@ server <- function(input, output, session){
       showModal(modalDialog("growth and Fluorescence data are identical. Did you assign the correct files and/or sheets?", easyClose = T))
     }
   })
-  
-  
+
+
   ### Render custom fluorescence table
   custom_table_fluorescence <- reactive({
     inFile <- input$custom_file_fluorescence
-    
+
     if(is.null(inFile))
       return(NULL)
-    
+
     filename <- inFile$datapath
     dec <- input$decimal_separator_custom_fluorescence
     csvsep <- input$separator_custom_fluorescence
@@ -6698,77 +6701,77 @@ server <- function(input, output, session){
       return(f1)
     } else return(NULL)
   })
-  
+
   output$custom_table_fluorescence <- DT::renderDT({
     f1 <- custom_table_fluorescence()
     DT::datatable(f1,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(f1)-3)))
   })
-  
+
   # Render processed growth table
   growth_data_custom_processed <- reactive({
-    
+
     if(is.null(results$custom_data) || length(results$custom_data$growth) < 2) return(NULL)
-    
+
     table_growth <- t(results$custom_data$growth)
     table_growth[-(1:3), ] <- apply(apply(table_growth[-(1:3), ], 2, as.numeric), 2, round, digits = 3)
     rownames(table_growth)[-(1:3)] <- ""
     table_growth <- cbind(data.frame("Time" = c("","","", round(as.numeric(results$custom_data$time[1,]), digits = 2))),
                           table_growth)
-    
+
     table_growth
   })
-  
+
   output$growth_data_custom_processed <- DT::renderDT({
     table_growth <- growth_data_custom_processed()
     DT::datatable(table_growth,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(table_growth)-3)))
   })
-  
+
   # render processed fluorescence table
   custom_table_fluorescence_processed <- reactive({
-    
+
     if(is.null(results$custom_data) || length(results$custom_data$fluorescence)<2) return(NULL)
-    
+
     table_fl <- t(results$custom_data$fluorescence)
     table_fl[-(1:3), ] <- apply(apply(table_fl[-(1:3), ], 2, as.numeric), 2, round, digits = 1)
     rownames(table_fl)[-(1:3)] <- ""
     table_fl <- cbind(data.frame("Time" = c("","","", round(as.numeric(results$custom_data$time[1,]), digits = 2))),
                       table_fl)
-    
+
     table_fl
   })
-  
+
   output$custom_table_fluorescence_processed <- DT::renderDT({
     table_fl <- custom_table_fluorescence_processed()
     DT::datatable(table_fl,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(table_fl)-3)))
   })
-  
+
   # render processed normalized fluorescence table
   custom_table_norm_fluorescence_processed <- reactive({
-    
+
     if(is.null(results$custom_data) || length(results$custom_data$norm.fluorescence)<2) return(NULL)
-    
+
     table_fl <- t(results$custom_data$norm.fluorescence)
     table_fl[-(1:3), ] <- apply(apply(table_fl[-(1:3), ], 2, as.numeric), 2, round, digits = 1)
     rownames(table_fl)[-(1:3)] <- ""
     table_fl <- cbind(data.frame("Time" = c("","","", round(as.numeric(results$custom_data$time[1,]), digits = 2))),
                       table_fl)
-    
+
     table_fl
   })
-  
+
   output$custom_table_norm_fluorescence_processed <- DT::renderDT({
     table_fl <- custom_table_norm_fluorescence_processed()
     DT::datatable(table_fl,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(table_fl)-3)))
   })
-  
+
   ### Render custom fluorescence 2 table
   # output$custom_table_fluorescence2 <- DT::renderDT({
   #   inFile <- input$custom_file_fluorescence2
@@ -6851,10 +6854,10 @@ server <- function(input, output, session){
   #             options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
   #             escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(f2)-3)))
   # })
-  
+
   custom_raw_growth_plot <- reactive({
     if(is.null(results$custom_data) || length(results$custom_data$growth) < 2) return(NULL)
-    
+
     try(
       suppressWarnings(
         plot.grodata(x = results$custom_data,
@@ -6864,14 +6867,14 @@ server <- function(input, output, session){
       )
     )
   })
-  
+
   output$custom_raw_growth_plot <- renderPlot({
     custom_raw_growth_plot()
   })
-  
+
   custom_raw_fluorescence_plot <- reactive({
     if(is.null(results$custom_data) || length(results$custom_data$fluorescence) < 2) return(NULL)
-    
+
     try(
       suppressWarnings(
         plot.grodata(x = results$custom_data,
@@ -6881,14 +6884,14 @@ server <- function(input, output, session){
       )
     )
   })
-  
+
   output$custom_raw_fluorescence_plot <- renderPlot({
     custom_raw_fluorescence_plot()
   })
-  
+
   custom_raw_norm_fluorescence_plot <- reactive({
     if(is.null(results$custom_data) || length(results$custom_data$norm.fluorescence) < 2) return(NULL)
-    
+
     try(
       suppressWarnings(
         plot.grodata(x = results$custom_data,
@@ -6898,43 +6901,43 @@ server <- function(input, output, session){
       )
     )
   })
-  
+
   output$custom_raw_norm_fluorescence_plot <- renderPlot({
     custom_raw_norm_fluorescence_plot()
   })
-  
-  
-  
+
+
+
   output$custom_growth_format <- reactive({
     if(is.null(input$custom_file_growth)) return(NULL)
-    
+
     filename <- input$custom_file_growth$name
-    
+
     format <- stringr::str_replace_all(filename, ".{1,}\\.", "")
     format
   })
   outputOptions(output, 'custom_growth_format', suspendWhenHidden=FALSE)
-  
+
   output$custom_fluorescence_format <- reactive({
     if(is.null(input$custom_file_fluorescence)) return(NULL)
-    
+
     filename <- input$custom_file_fluorescence$name
-    
+
     format <- stringr::str_replace_all(filename, ".{1,}\\.", "")
     format
   })
   outputOptions(output, 'custom_fluorescence_format', suspendWhenHidden=FALSE)
-  
+
   output$custom_fluorescence2_format <- reactive({
     if(is.null(input$custom_file_fluorescence2)) return(NULL)
-    
+
     filename <- input$custom_file_fluorescence2$name
-    
+
     format <- stringr::str_replace_all(filename, ".{1,}\\.", "")
     format
   })
   outputOptions(output, 'custom_fluorescence2_format', suspendWhenHidden=FALSE)
-  
+
   growth_excel_sheets <- reactive({
     filename <- input$custom_file_growth$datapath
     if(is.null(input$custom_file_growth)) return("")
@@ -6943,7 +6946,7 @@ server <- function(input, output, session){
     sheets <- readxl::excel_sheets(input$custom_file_growth$datapath)
     sheets
   })
-  
+
   fluorescence_excel_sheets <- reactive({
     filename <- input$custom_file_fluorescence$datapath
     if(is.null(input$custom_file_fluorescence)) return("")
@@ -6952,7 +6955,7 @@ server <- function(input, output, session){
     sheets <- readxl::excel_sheets(input$custom_file_fluorescence$datapath)
     sheets
   })
-  
+
   fluorescence2_excel_sheets <- reactive({
     filename <- input$custom_file_fluorescence2$datapath
     if(is.null(input$custom_file_fluorescence2)) return("")
@@ -6961,22 +6964,22 @@ server <- function(input, output, session){
     sheets <- readxl::excel_sheets(input$custom_file_fluorescence2$datapath)
     sheets
   })
-  
+
   observe({
     updateSelectInput(inputId = "custom_growth_sheets",
                       choices = growth_excel_sheets()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "custom_fluorescence_sheets",
                       choices = fluorescence_excel_sheets()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "custom_fluorescence2_sheets",
                       choices = fluorescence2_excel_sheets()
     )})
-  
+
   observeEvent(input$random_data_growth, {
     # display a modal dialog with a header, textinput and action buttons
     showModal(
@@ -6988,7 +6991,7 @@ server <- function(input, output, session){
         textInput('mu.random.growth', 'Maximum growth rate', placeholder = "0.6"),
         textInput('lambda.random.growth', 'Minimum lag time', placeholder = "5"),
         textInput('A.random.growth', 'Maximum growth', placeholder = "3"),
-        
+
         footer=tagList(
           fluidRow(
             column(12,
@@ -7004,14 +7007,14 @@ server <- function(input, output, session){
                                   icon=icon("question"),
                                   style="padding:2px; font-size:100%"),
                      style="float:left")
-                   
+
             )
           )
         ) # footer
       ) # modalDialog
     ) # showModal
   })
-  
+
   # Generate random dataset
   observeEvent(input$submit.random.data.growth, {
     d <- ifelse(input$d.random.growth == "", 35, as.numeric(input$d.random.growth))
@@ -7020,9 +7023,9 @@ server <- function(input, output, session){
     mu <- ifelse(input$mu.random.growth == "", 0.6, as.numeric(input$mu.random.growth))
     lambda <- ifelse(input$lambda.random.growth == "", 5, as.numeric(input$lambda.random.growth))
     A <- ifelse(input$A.random.growth == "", 3, as.numeric(input$A.random.growth))
-    
+
     results$custom_data <- rdm.data(d, y0 = y0, tmax = tmax, mu = mu, lambda = lambda, A = A, label = "Test")
-    
+
     hide("data_instruction")
     show("Custom_Data_Tables")
     hide("Parsed_Data_Tables")
@@ -7033,7 +7036,7 @@ server <- function(input, output, session){
     # if("growth" %in% names(results$custom_data) && length(results$custom_data$fluorescence2)>1){
     #   showTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_fluorescence2")
     # }
-    
+
     # Remove eventually pre-loaded parsed data
     results$parsed_data <- NULL
     hide("parsed_reads_growth")
@@ -7042,18 +7045,18 @@ server <- function(input, output, session){
     hide("norm_type_parse")
     hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_growth")
     hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_growth")
-    
+
     hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_fluorescence")
     hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_fluorescence")
-    
+
     hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_norm_fluorescence")
     hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_norm_fluorescence")
-    
+
     hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_expdesign")
-    
-    
+
+
     shinyjs::enable(selector = "#navbar li a[data-value=navbarMenu_Computation]")
-    
+
     results$df_random_data <- data.frame("time" = c("time", "","", results$custom_data$time[1,]),
                                          "data" = t(results$custom_data$data))
     colnames(results$df_random_data ) <- results$df_random_data [1,]
@@ -7061,20 +7064,20 @@ server <- function(input, output, session){
     results$random_data_growth <- paste0(tempdir(), "/random_data.csv")
     removeModal()
   })
-  
+
   observe({
     growth.file <- results$random_data_growth
-    
+
     if(is.null(growth.file)) return(NULL)
     ## Read data
     try(
       results$custom_data <- read_data(results$df_random_data,
                                        # data.fluoro2 = fl2.file$datapath,
                                        data.format = "col"
-                                       
+
       )
     )
-    
+
     if(length(results$custom_data)<2){
       showModal(modalDialog("Data could not be extracted from the provided file. Did you correctly format your custom data?", easyClose = T, footer=NULL))
     } else {
@@ -7088,7 +7091,7 @@ server <- function(input, output, session){
       # if("growth" %in% names(results$custom_data) && length(results$custom_data$fluorescence2)>1){
       #   showTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_fluorescence2")
       # }
-      
+
       # Remove eventually pre-loaded parsed data
       results$parsed_data <- NULL
       hide("parsed_reads_growth")
@@ -7096,21 +7099,21 @@ server <- function(input, output, session){
       hide("parsed_reads_norm_fluorescence")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_growth")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_growth")
-      
+
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_fluorescence")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_fluorescence")
-      
+
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_norm_fluorescence")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_norm_fluorescence")
       # hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_fluorescence2")
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_expdesign")
-      
+
       shinyjs::enable(selector = "#navbar li a[data-value=navbarMenu_Computation]")
       hide("random_data_growth")
       removeModal()
     }
   })
-  
+
   ##__Parse data____####
   ### Hide elements to guide user
   hide("Parsed_Data_Tables")
@@ -7121,12 +7124,12 @@ server <- function(input, output, session){
   hide("norm_type_parse")
   hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_growth")
   hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_growth")
-  
+
   hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_fluorescence")
   hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_fluorescence")
   # hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_fluorescence2")
   hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_expdesign")
-  
+
   observe({
     if(exists("parsed_data_table_expdesign") && !is.null(parsed_data_table_expdesign())){
       showTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_expdesign")
@@ -7155,7 +7158,7 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_norm_fluorescence")
     }
   })
-  
+
   # Update placeholder for time conversion based on selected software
   observe({
     if("Gen5" %in% input$platereader_software){
@@ -7180,14 +7183,14 @@ server <- function(input, output, session){
       updateTextInput(session, "convert_time_equation_plate_reader", value = "y = x / 60")
     }
   })
-  
+
   ### Test if parse_file was loaded
   output$parsefileUploaded <- reactive({
     if(is.null(input$parse_file)) return(FALSE)
     else return(TRUE)
   })
   outputOptions(output, 'parsefileUploaded', suspendWhenHidden=FALSE)
-  
+
   parse_excel_sheets <- reactive({
     filename <- input$parse_file$datapath
     if(is.null(input$parse_file)) return("")
@@ -7196,7 +7199,7 @@ server <- function(input, output, session){
     sheets <- readxl::excel_sheets(input$parse_file$datapath)
     sheets
   })
-  
+
   map_excel_sheets <- reactive({
     filename <- input$map_file$datapath
     if(is.null(input$map_file)) return("")
@@ -7205,47 +7208,47 @@ server <- function(input, output, session){
     sheets <- readxl::excel_sheets(input$map_file$datapath)
     sheets
   })
-  
+
   ### Test if map_file was loaded
   output$mapfileUploaded <- reactive({
     if(is.null(input$map_file)) return(FALSE)
     else return(TRUE)
   })
   outputOptions(output, 'mapfileUploaded', suspendWhenHidden=FALSE)
-  
+
   ### get file formats for parse_file and map_file
   output$parse_file_format <- reactive({
     if(is.null(input$parse_file)) return(NULL)
-    
+
     filename <- input$parse_file$name
-    
+
     format <- stringr::str_replace_all(filename, ".{1,}\\.", "")
     format
   })
   outputOptions(output, 'parse_file_format', suspendWhenHidden=FALSE)
-  
+
   output$map_file_format <- reactive({
     if(is.null(input$map_file)) return(NULL)
-    
+
     filename <- input$map_file$name
-    
+
     format <- stringr::str_replace_all(filename, ".{1,}\\.", "")
     format
   })
   outputOptions(output, 'map_file_format', suspendWhenHidden=FALSE)
-  
+
   ### Extract reads from data file
   selected_inputs_parsed_reads <- reactive({
     inFile <- input$parse_file
-    
+
     if(is.null(inFile))
       return(NULL)
-    
+
     filename <- inFile$datapath
     if (stringr::str_replace_all(filename, ".{1,}\\.", "") == "xls" |
         stringr::str_replace(filename, ".{1,}\\.", "") == "xlsx"){
       showModal(modalDialog(HTML("<strong>Reading data file...</strong><br><br><i>Note: Reading .xls/.xlsx files can take up to several minutes. Consider saving as .csv/.tsv/.txt before running QurvE.</i>"), footer=NULL))
-      
+
     }else {
       showModal(modalDialog("Reading data file...", footer=NULL))
     }
@@ -7255,7 +7258,7 @@ server <- function(input, output, session){
                                                      dec = input$decimal_separator_parse,
                                                      sheet = ifelse(input$parse_data_sheets == "Sheet1", 1, input$parse_data_sheets) ),
           silent = FALSE
-          
+
       )
     }
     if("Chi.Bio" %in% input$platereader_software){
@@ -7264,7 +7267,7 @@ server <- function(input, output, session){
                                                    dec = input$decimal_separator_parse,
                                                    sheet = ifelse(input$parse_data_sheets == "Sheet1", 1, input$parse_data_sheets) ),
           silent = FALSE
-          
+
       )
     }
     if("Tecan" %in% input$platereader_software){
@@ -7273,7 +7276,7 @@ server <- function(input, output, session){
                                                   dec = input$decimal_separator_parse,
                                                   sheet = ifelse(input$parse_data_sheets == "Sheet1", 1, input$parse_data_sheets) ),
           silent = FALSE
-          
+
       )
     }
     if("Biolector" %in% input$platereader_software){
@@ -7282,7 +7285,7 @@ server <- function(input, output, session){
                                                       dec = input$decimal_separator_parse,
                                                       sheet = ifelse(input$parse_data_sheets == "Sheet1", 1, input$parse_data_sheets) ),
           silent = FALSE
-          
+
       )
     }
     if("VictorNivo" %in% input$platereader_software){
@@ -7291,7 +7294,7 @@ server <- function(input, output, session){
                                                        dec = input$decimal_separator_parse,
                                                        sheet = ifelse(input$parse_data_sheets == "Sheet1", 1, input$parse_data_sheets) ),
           silent = FALSE
-          
+
       )
     }
     if("VictorX3" %in% input$platereader_software){
@@ -7300,7 +7303,7 @@ server <- function(input, output, session){
                                                      dec = input$decimal_separator_parse,
                                                      sheet = ifelse(input$parse_data_sheets == "Sheet1", 1, input$parse_data_sheets) ),
           silent = FALSE
-          
+
       )
     }
     if(exists("reads") && length(reads) > 0){
@@ -7311,7 +7314,7 @@ server <- function(input, output, session){
       } else {
         hide("parsed_reads_fluorescence2")
       }
-      
+
       show("parse_data")
       removeModal()
       reads <- c(reads, "Ignore")
@@ -7328,7 +7331,7 @@ server <- function(input, output, session){
       removeModal()
     }
   })
-  
+
   observe({
     reads <- selected_inputs_parsed_reads()
     if(length(reads) < 2)
@@ -7356,7 +7359,7 @@ server <- function(input, output, session){
                       choices = norm.types
     )
   })
-  
+
   observe({
     updateSelectInput(inputId = "parsed_reads_growth",
                       choices = selected_inputs_parsed_reads()
@@ -7376,8 +7379,8 @@ server <- function(input, output, session){
     if(input$mapping_included_in_parse) hide("map_file")
     if(!input$mapping_included_in_parse) show("map_file")
   }, ignoreInit = TRUE)
-  
-  
+
+
   #### Parse data and extract read tabs
   observeEvent(input$parse_data,{
     if(input$norm_type_parse == "fluorescence 2"){
@@ -7479,7 +7482,7 @@ server <- function(input, output, session){
     if("growth" %in% names(results$parsed_data) && length(results$parsed_data$growth)>1){
       showTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_growth")
       showTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_growth")
-      
+
       # show [Run Computation] button in Computation-Growth
       show("run_growth")
       shinyjs::enable(selector = "#navbar li a[data-value=navbarMenu_Computation]")
@@ -7496,24 +7499,24 @@ server <- function(input, output, session){
     results$custom_data <- NULL
     hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_growth_processed")
     hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_plots_growth")
-    
+
     hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_fluorescence_processed")
     hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_plots_fluorescence")
-    
+
     hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_norm_fluorescence_processed")
     hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_plots_norm_fluorescence")
-    
-    
+
+
     # hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_fluorescence2")
     hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_expdesign")
-    
-    
+
+
     removeModal()
   })
   #### Generate parsed tables to display in [DATA] tab
   parsed_data_table_growth <- reactive({
     if(is.null(results$parsed_data) || length(results$parsed_data$growth) < 2) return(NULL)
-    
+
     table_growth <- t(results$parsed_data$growth)
     if(dim(table_growth)[2]<2){
       table_growth[-(1:3), ] <- round(as.numeric(table_growth[-(1:3), ]), digits = 3)
@@ -7525,17 +7528,17 @@ server <- function(input, output, session){
                           table_growth)
     table_growth
   })
-  
+
   output$parsed_data_table_growth <- DT::renderDT({
     DT::datatable(parsed_data_table_growth(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(parsed_data_table_growth())-3)))
-    
+
   })
-  
+
   parsed_data_table_fluorescence <- reactive({
     if(is.null(results$parsed_data) || length(results$parsed_data$fluorescence)<2) return(NULL)
-    
+
     table_fl <- t(results$parsed_data$fluorescence)
     table_fl[-(1:3), ] <- apply(apply(table_fl[-(1:3), ], 2, as.numeric), 2, round, digits = 1)
     rownames(table_fl)[-(1:3)] <- ""
@@ -7543,18 +7546,18 @@ server <- function(input, output, session){
                       table_fl)
     table_fl
   })
-  
+
   output$parsed_data_table_fluorescence <- DT::renderDT({
     DT::datatable(parsed_data_table_fluorescence(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(parsed_data_table_fluorescence())-3)))
-    
+
   })
-  
+
   # render processed normalized fluorescence table
   parsed_data_table_norm_fluorescence <- reactive({
     if(is.null(results$parsed_data) || length(results$parsed_data$norm.fluorescence)<2) return(NULL)
-    
+
     table_fl <- t(results$parsed_data$norm.fluorescence)
     table_fl[-(1:3), ] <- apply(apply(table_fl[-(1:3), ], 2, as.numeric), 2, round, digits = 1)
     rownames(table_fl)[-(1:3)] <- ""
@@ -7562,12 +7565,12 @@ server <- function(input, output, session){
                       table_fl)
     table_fl
   })
-  
+
   output$parsed_data_table_norm_fluorescence <- DT::renderDT({
     DT::datatable(parsed_data_table_norm_fluorescence(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(parsed_data_table_norm_fluorescence())-3)))
-    
+
   })
   # output$parsed_data_table_fluorescence2 <- DT::renderDT({
   #
@@ -7590,17 +7593,17 @@ server <- function(input, output, session){
     expdesign <- results$parsed_data$expdesign
     expdesign
   })
-  
+
   output$parsed_data_table_expdesign <- DT::renderDT({
     expdesign <- parsed_data_table_expdesign()
     DT::datatable(expdesign,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE, rownames = T)
   })
-  
+
   parsed_raw_growth_plot <- reactive({
     if(is.null(results$parsed_data) || length(results$parsed_data$growth) < 2) return(NULL)
-    
+
     try(
       suppressWarnings(
         plot.grodata(x = results$parsed_data,
@@ -7610,14 +7613,14 @@ server <- function(input, output, session){
       )
     )
   })
-  
+
   output$parsed_raw_growth_plot <- renderPlot({
     parsed_raw_growth_plot()
   })
-  
+
   parsed_raw_fluorescence_plot <- reactive({
     if(is.null(results$parsed_data) || length(results$parsed_data$fluorescence) < 2) return(NULL)
-    
+
     try(
       suppressWarnings(
         plot.grodata(x = results$parsed_data,
@@ -7627,16 +7630,16 @@ server <- function(input, output, session){
       )
     )
   })
-  
+
   output$parsed_raw_fluorescence_plot <- renderPlot({
     parsed_raw_fluorescence_plot()
   })
-  
+
   observe({
     updateSelectInput(inputId = "parse_data_sheets",
                       choices = parse_excel_sheets()
     )})
-  
+
   observe({
     if(input$mapping_included_in_parse){
       updateSelectInput(inputId = "map_data_sheets",
@@ -7648,7 +7651,7 @@ server <- function(input, output, session){
       )
     }
   })
-  
+
   parsed_raw_norm_fluorescence_plot <- reactive({
     if(is.null(results$parsed_data) || length(results$parsed_data$norm.fluorescence) < 2) return(NULL)
     try(
@@ -7660,11 +7663,11 @@ server <- function(input, output, session){
       )
     )
   })
-  
+
   output$parsed_raw_norm_fluorescence_plot <- renderPlot({
     parsed_raw_norm_fluorescence_plot()
   })
-  
+
   ##__Table_download____####
   output$download_custom_tables_growth_processed <- downloadHandler(
     filename = function() {
@@ -7676,7 +7679,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_custom_tables_fluorescence_processed <- downloadHandler(
     filename = function() {
       paste("custom_fluorescence_data", ".csv", sep="")
@@ -7687,7 +7690,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_custom_tables_norm_fluorescence_processed <- downloadHandler(
     filename = function() {
       paste("custom_norm_fluorescence_data", ".csv", sep="")
@@ -7698,7 +7701,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_custom_tables_expdesign <- downloadHandler(
     filename = function() {
       paste("custom_expdesign", ".csv", sep="")
@@ -7709,7 +7712,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_parsed_tables_growth <- downloadHandler(
     filename = function() {
       paste("parsed_growth_data", ".csv", sep="")
@@ -7720,7 +7723,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_parsed_tables_fluorescence <- downloadHandler(
     filename = function() {
       paste("parsed_fluorescence_data", ".csv", sep="")
@@ -7731,7 +7734,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_parsed_data_table_norm_fluorescence <- downloadHandler(
     filename = function() {
       paste("parsed_norm_fluorescence_data", ".csv", sep="")
@@ -7742,7 +7745,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_parsed_tables_expdesign <- downloadHandler(
     filename = function() {
       paste("parsed_expdesign", ".csv", sep="")
@@ -7757,7 +7760,7 @@ server <- function(input, output, session){
   # Computation ####
   ##____Growth____#####
   hide("run_growth")
-  
+
   selected_inputs_response_parameter_growth <- reactive({
     select_options <- c()
     if(input$linear_regression_growth) select_options <- c(select_options, 'mu.linfit', 'lambda.linfit', 'dY.linfit',
@@ -7767,14 +7770,14 @@ server <- function(input, output, session){
     if(input$parametric_fit_growth) select_options <- c(select_options, 'mu.model', 'lambda.model', 'A.model', 'integral.model')
     select_options
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "response_parameter_growth",
                       choices = selected_inputs_response_parameter_growth()
     )
   })
-  
+
   observeEvent(input$run_growth,{
     ## Read data
     # grodata <- read_data(inFile$datapath, sheet.growth = input$custom_growth_sheets, csvsep = input$separator_custom_growth, dec = input$decimal_separator_custom_growth)
@@ -7784,79 +7787,79 @@ server <- function(input, output, session){
     } else if(!is.null(results$parsed_data)){
       grodata <- results$parsed_data
     } else return(NULL)
-    
+
     if (is.null(input$number_of_bootstrappings_growth) || is.na(input$number_of_bootstrappings_growth) || input$number_of_bootstrappings_growth == "NULL" || input$number_of_bootstrappings_growth == "") {
       nboot.gc <- 0.55
     } else {
       nboot.gc <- as.numeric(input$number_of_bootstrappings_growth)
     }
-    
+
     if (is.null(input$smoothing_factor_nonparametric_growth) || is.na(input$smoothing_factor_nonparametric_growth) || input$smoothing_factor_nonparametric_growth == "NULL" || input$smoothing_factor_nonparametric_growth == "") {
       smooth.gc <- 0.55
     } else {
       smooth.gc <- as.numeric(input$smoothing_factor_nonparametric_growth)
     }
-    
+
     if (is.null(input$smoothing_factor_growth_dr) || is.na(input$smoothing_factor_growth_dr) || input$smoothing_factor_growth_dr == "NULL" || input$smoothing_factor_growth_dr == "") {
       smooth.dr = NULL
     } else {
       smooth.dr <- as.numeric(input$smoothing_factor_growth_dr)
     }
-    
+
     if (is.null(input$number_of_bootstrappings_dr_growth) || is.na(input$number_of_bootstrappings_dr_growth) || input$number_of_bootstrappings_dr_growth == "NULL" || input$number_of_bootstrappings_dr_growth == "") {
       nboot.dr <- 0
     } else {
       nboot.dr <- as.numeric(input$number_of_bootstrappings_dr_growth)
     }
-    
+
     if (is.null(input$R2_threshold_growth) || is.na(input$R2_threshold_growth) || input$R2_threshold_growth == "NULL" || input$R2_threshold_growth == "") {
       lin.R2 <- 0.95
     } else {
       lin.R2 <- as.numeric(input$R2_threshold_growth)
     }
-    
+
     if (is.null(input$RSD_threshold_growth) || is.na(input$RSD_threshold_growth) || input$RSD_threshold_growth == "NULL" || input$RSD_threshold_growth == "") {
       lin.RSD <- 0.1
     } else {
       lin.RSD <- as.numeric(input$RSD_threshold_growth)
     }
-    
+
     if (is.null(input$dY_threshold_growth) || is.na(input$dY_threshold_growth) || input$dY_threshold_growth == "NULL" || input$dY_threshold_growth == "") {
       lin.dY <- 0.05
     } else {
       lin.dY <- as.numeric(input$dY_threshold_growth)
     }
-    
+
     if (is.null(input$minimum_growth_growth) || is.na(input$minimum_growth_growth) || input$minimum_growth_growth == "NULL" || input$minimum_growth_growth == "") {
       min.growth <- 0
     } else {
       min.growth <- as.numeric(input$minimum_growth_growth)
     }
-    
+
     if (is.null(input$maximum_growth_growth) || is.na(input$maximum_growth_growth) || input$maximum_growth_growth == "NULL" || input$maximum_growth_growth == "") {
       max.growth <- NA
     } else {
       max.growth <- as.numeric(input$maximum_growth_growth)
     }
-    
+
     if (is.null(input$t0_growth) || is.na(input$t0_growth) || input$t0_growth == "NULL" || input$t0_growth == "") {
       t0 <- 0
     } else {
       t0 <- as.numeric(input$t0_growth)
     }
-    
+
     if (is.null(input$tmax_growth) || is.na(input$tmax_growth) || input$tmax_growth == "NULL" || input$tmax_growth == "") {
       tmax <- NA
     } else {
       tmax <- as.numeric(input$tmax_growth)
     }
-    
+
     if (is.null(input$growth_threshold_growth) || is.na(input$growth_threshold_growth) || input$growth_threshold_growth == "NULL" || input$growth_threshold_growth == "") {
       growth.thresh <- 1.5
     } else {
       growth.thresh <- as.numeric(input$growth_threshold_growth)
     }
-    
+
     fit.opt <- c()
     if(input$linear_regression_growth){
       fit.opt <- c(fit.opt,
@@ -7917,12 +7920,12 @@ server <- function(input, output, session){
                                                      report = NULL,
                                                      shiny = TRUE,
                                                      parallelize = FALSE
-                                                     
+
                               )
                             )
                         )
     )
-    
+
     if(!is.null("results$growth")){
       # ENABLE DISABLED PANELS AFTER RUNNING COMPUTATION
       shinyjs::enable(selector = "#navbar li a[data-value=tabPanel_Export_RData]")
@@ -7934,10 +7937,10 @@ server <- function(input, output, session){
     }
     if(exists("results$growth") && !is.null("results$growth"))
       showModal(modalDialog(geterrmessage()) )
-    
+
   })
   ##____Fluorescence____#####
-  
+
   # Create vector of x_types based on presence of data types
   output$normalized_fl_present <- reactive({
     if(!is.null(results$custom_data)){
@@ -7946,9 +7949,9 @@ server <- function(input, output, session){
       grodata <- results$parsed_data
       if(input$parsed_reads_growth == input$parsed_reads_fluorescence)
         showModal(modalDialog("Identical values for growth and fluorescence data. Did you choose the correct data identifiers?"))
-      
+
     } else return(FALSE)
-    
+
     if(length(grodata$norm.fluorescence) > 1){
       return(TRUE)
     } else {
@@ -7956,27 +7959,27 @@ server <- function(input, output, session){
     }
   })
   outputOptions(output, 'normalized_fl_present', suspendWhenHidden=FALSE)
-  
-  
+
+
   selected_inputs_fluorescence_x_types <- reactive({
     if(is.null(results$custom_data) && is.null(results$parsed_data)) return(NULL)
     if(!is.null(results$custom_data)) data <- results$custom_data
     if(!is.null(results$parsed_data)) data <- results$parsed_data
-    
+
     x_types <- c()
     if(length(data$growth) > 1) x_types <- c(x_types, 'growth')
     if(length(data$time) > 1) x_types <- c(x_types, 'time')
-    
+
     x_types
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "data_type_x_fluorescence",
                       choices = selected_inputs_fluorescence_x_types()
     )
   })
-  
+
   selected_inputs_response_parameter_fluorescence <- reactive({
     select_options <- c()
     if(input$linear_regression_fluorescence) select_options <- c(select_options, 'max_slope.linfit', 'lambda.linfit', 'dY.linfit',
@@ -7985,14 +7988,14 @@ server <- function(input, output, session){
                                                                  'A.spline', 'dY.spline', 'integral.spline')
     select_options
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "response_parameter_fluorescence",
                       choices = selected_inputs_response_parameter_fluorescence()
     )
   })
-  
+
   observeEvent(input$run_fluorescence,{
     # Choose data input
     if(!is.null(results$custom_data)){
@@ -8000,80 +8003,80 @@ server <- function(input, output, session){
     } else if(!is.null(results$parsed_data)){
       grodata <- results$parsed_data
     } else return(NULL)
-    
+
     if (is.null(input$smoothing_factor_nonparametric_fluorescence) || is.na(input$smoothing_factor_nonparametric_fluorescence) || input$smoothing_factor_nonparametric_fluorescence == "NULL" || input$smoothing_factor_nonparametric_fluorescence == "") {
       smooth.fl = 0.75
     } else {
       smooth.fl <- as.numeric(input$smoothing_factor_nonparametric_fluorescence)
     }
-    
+
     if (is.null(input$smoothing_factor_fluorescence_dr) || is.na(input$smoothing_factor_fluorescence_dr) || input$smoothing_factor_fluorescence_dr == "NULL" || input$smoothing_factor_fluorescence_dr == "") {
       smooth.dr = NULL
     } else {
       smooth.dr <- as.numeric(input$smoothing_factor_fluorescence_dr)
     }
-    
+
     if (is.null(input$number_of_bootstrappings_fluorescence) || is.na(input$number_of_bootstrappings_fluorescence) || input$number_of_bootstrappings_fluorescence == "NULL" || input$number_of_bootstrappings_fluorescence == "") {
       nboot.fl <- 0
     } else {
       nboot.fl <- as.numeric(input$number_of_bootstrappings_fluorescence)
     }
-    
+
     if (is.null(input$number_of_bootstrappings_dr_fluorescence) || is.na(input$number_of_bootstrappings_dr_fluorescence) || input$number_of_bootstrappings_dr_fluorescence == "NULL" || input$number_of_bootstrappings_dr_fluorescence == "") {
       nboot.dr <- 0
     } else {
       nboot.dr <- as.numeric(input$number_of_bootstrappings_dr_fluorescence)
     }
-    
+
     if (is.null(input$R2_threshold_fluorescence) || is.na(input$R2_threshold_fluorescence) || input$R2_threshold_fluorescence == "NULL" || input$R2_threshold_fluorescence == "") {
       lin.R2 <- 0.95
     } else {
       lin.R2 <- as.numeric(input$R2_threshold_fluorescence)
     }
-    
+
     if (is.null(input$RSD_threshold_fluorescence) || is.na(input$RSD_threshold_fluorescence) || input$RSD_threshold_fluorescence == "NULL" || input$RSD_threshold_fluorescence == "") {
       lin.RSD <- 0.1
     } else {
       lin.RSD <- as.numeric(input$RSD_threshold_fluorescence)
     }
-    
+
     if (is.null(input$dY_threshold_fluorescence) || is.na(input$dY_threshold_fluorescence) || input$dY_threshold_fluorescence == "NULL" || input$dY_threshold_fluorescence == "") {
       lin.dY <- 0.05
     } else {
       lin.dY <- as.numeric(input$dY_threshold_fluorescence)
     }
-    
+
     if (is.null(input$growth_threshold_in_percent_fluorescence) || is.na(input$growth_threshold_in_percent_fluorescence) || input$growth_threshold_in_percent_fluorescence == "NULL" || input$growth_threshold_in_percent_fluorescence == "") {
       growth.thresh <- 1.5
     } else {
       growth.thresh <- as.numeric(input$growth_threshold_in_percent_fluorescence)
     }
-    
+
     if (is.null(input$t0_fluorescence) || is.na(input$t0_fluorescence) || input$t0_fluorescence == "NULL" || input$t0_fluorescence == "") {
       t0 <- 0
     } else {
       t0 <- as.numeric(input$t0_fluorescence)
     }
-    
+
     if (is.null(input$minimum_growth_fluorescence) || is.na(input$minimum_growth_fluorescence) || input$minimum_growth_fluorescence == "NULL" || input$minimum_growth_fluorescence == "") {
       min.growth <- 0
     } else {
       min.growth <- as.numeric(input$minimum_growth_fluorescence)
     }
-    
+
     if (is.null(input$maximum_growth_fluorescence) || is.na(input$maximum_growth_fluorescence) || input$maximum_growth_fluorescence == "NULL" || input$maximum_growth_fluorescence == "") {
       max.growth <- NA
     } else {
       max.growth <- as.numeric(input$maximum_growth_fluorescence)
     }
-    
-    
+
+
     if (is.null(input$tmax_fluorescence) || is.na(input$tmax_fluorescence) || input$tmax_fluorescence == "NULL" || input$tmax_fluorescence == "") {
       tmax <- NA
     } else {
       tmax <- as.numeric(input$tmax_fluorescence)
     }
-    
+
     fit.opt <- c()
     if(input$linear_regression_fluorescence){
       fit.opt <- c(fit.opt,
@@ -8083,8 +8086,8 @@ server <- function(input, output, session){
       fit.opt <- c(fit.opt,
                    's')
     }
-    
-    
+
+
     # removeModal()
     showModal(modalDialog("Running computations...", footer=NULL))
     # Run fluorescence workflow
@@ -8133,7 +8136,7 @@ server <- function(input, output, session){
                             )
       )
     )
-    
+
     if(!is.null("results$fluorescence")){
       ## ENABLE DISABLED PANELS AFTER RUNNING COMPUTATION
       shinyjs::enable(selector = "#navbar li a[data-value=tabPanel_Export_RData]")
@@ -8146,7 +8149,7 @@ server <- function(input, output, session){
     if(exists("results$fluorescence") && !is.null("results$fluorescence"))
       showModal(modalDialog(geterrmessage()) )
   })
-  
+
   # Results ####
   ## Growth ####
   observe({
@@ -8179,7 +8182,7 @@ server <- function(input, output, session){
       }
     }
   })
-  
+
   ### Linear ####
   table_growth_linear <- reactive({
     res.table.gc <- results$growth$gcFit$gcTable
@@ -8194,15 +8197,15 @@ server <- function(input, output, session){
                                "R<sup>2</sup><br>(linear fit)" = ifelse(is.na(res.table.gc$mu2.linfit), round(as.numeric(res.table.gc$r2mu.linfit), 3), paste0("<strong>", round(as.numeric(res.table.gc$r2mu.linfit), 3), "</strong>", " (", round(as.numeric(res.table.gc$r2mu2.linfit), 3), ")")),
                                stringsAsFactors = FALSE, check.names = F)
     table_linear
-    
+
   })
-  
+
   output$results_table_growth_linear <- DT::renderDT({
     DT::datatable(table_growth_linear(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   table_growth_linear_group <- reactive({
     gcTable <- results$growth$gcFit$gcTable
     table <- QurvE:::table_group_growth_linear(gcTable)
@@ -8211,15 +8214,15 @@ server <- function(input, output, session){
                          "t<sub>end</sub><br>(\u03bc<sub>max</sub>)")
     table
   })
-  
+
   output$results_table_growth_linear_group <- DT::renderDT({
     DT::datatable(table_growth_linear_group(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   ### Spline ####
-  
+
   table_growth_spline <- reactive({
     res.table.gc <- results$growth$gcFit$gcTable
     table_spline <- data.frame("Sample|Replicate|Conc." = paste(res.table.gc$TestId, res.table.gc$AddId, res.table.gc$concentration, sep = "|"),
@@ -8232,13 +8235,13 @@ server <- function(input, output, session){
                                "smooth.<br>fac" = res.table.gc$smooth.spline, check.names = F)
     table_spline
   })
-  
+
   output$results_table_growth_spline <- DT::renderDT({
     DT::datatable(table_growth_spline(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   table_growth_spline_group <- reactive({
     gcTable <- results$growth$gcFit$gcTable
     table <- QurvE:::table_group_growth_spline(gcTable)
@@ -8246,15 +8249,15 @@ server <- function(input, output, session){
                          "\u2206Y", "y<sub>max</sub>", "t(\u03bc<sub>max</sub>)")
     table
   })
-  
+
   output$results_table_growth_spline_group <- DT::renderDT({
     DT::datatable(table_growth_spline_group(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   ### Spline BT ####
-  
+
   table_growth_spline_bt <- reactive({
     res.table.gc <- results$growth$gcFit$gcTable
     table_spline <- data.frame("Sample|Replicate|Conc." = paste(res.table.gc$TestId, res.table.gc$AddId, res.table.gc$concentration, sep = "|"),
@@ -8296,15 +8299,15 @@ server <- function(input, output, session){
                                "smooth.<br>fac" = res.table.gc$smooth.spline, check.names = F)
     table_spline
   })
-  
+
   output$results_table_growth_spline_bt <- DT::renderDT({
     DT::datatable(table_growth_spline_bt(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   ### Model ####
-  
+
   table_growth_model <- reactive({
     try({
       res.table.gc <- results$growth$gcFit$gcTable
@@ -8332,14 +8335,14 @@ server <- function(input, output, session){
       table_model
     })
   })
-  
+
   output$results_table_growth_model <- DT::renderDT({
     table_model <- table_growth_model()
     DT::datatable(table_model,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   table_growth_model_group <- reactive({
     gcTable <- results$growth$gcFit$gcTable
     table <- QurvE:::table_group_growth_model(gcTable)
@@ -8347,15 +8350,15 @@ server <- function(input, output, session){
                          "y<sub>max</sub>", "\u2206Y")
     table
   })
-  
+
   output$results_table_growth_model_group <- DT::renderDT({
     DT::datatable(table_growth_model_group(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   ### DR Spline ####
-  
+
   table_growth_dr_spline <- reactive({
     if(results$growth$drFit$control$dr.method == "spline"){
       try({
@@ -8398,19 +8401,19 @@ server <- function(input, output, session){
                                "Test parameter" = res.table.dr[["test"]],
                                "Model" = paste0(res.table.dr[["model"]], ": ", model.descr[match(res.table.dr[["model"]], model.names)]),
                                stringsAsFactors = FALSE, check.names = F)
-        
+
         table_dr
       })
     }
   })
-  
+
   output$results_table_growth_dr_spline <- DT::renderDT({
     table_dr <- table_growth_dr_spline()
     DT::datatable(table_dr,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "All")) ),
                   escape = FALSE)
   })
-  
+
   ###____Table Download____####
   output$download_table_growth_linear <- downloadHandler(
     filename = function() {
@@ -8422,7 +8425,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_growth_linear_group <- downloadHandler(
     filename = function() {
       paste("growth_results_linear_fits_grouped", ".csv", sep="")
@@ -8433,7 +8436,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_growth_spline <- downloadHandler(
     filename = function() {
       paste("growth_results_spline_fits", ".csv", sep="")
@@ -8444,7 +8447,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_growth_spline_group <- downloadHandler(
     filename = function() {
       paste("growth_results_spline_fits_grouped", ".csv", sep="")
@@ -8455,7 +8458,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_growth_spline_bt <- downloadHandler(
     filename = function() {
       paste("growth_results_spline_bootstrappings", ".csv", sep="")
@@ -8466,7 +8469,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_growth_model <- downloadHandler(
     filename = function() {
       paste("growth_results_model_fits", ".csv", sep="")
@@ -8477,7 +8480,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_growth_model_group <- downloadHandler(
     filename = function() {
       paste("growth_results_model_fits_grouped", ".csv", sep="")
@@ -8488,7 +8491,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_growth_dr <- downloadHandler(
     filename = function() {
       paste("growth_results_dose-response_analysis", ".csv", sep="")
@@ -8532,7 +8535,7 @@ server <- function(input, output, session){
   })
   table_fluorescence_linear <- reactive({
     res.table.fl <- results$fluorescence$flFit$flTable
-    
+
     table_linear <- data.frame("Sample|Replicate|Conc." = paste(res.table.fl$TestId, res.table.fl$AddId, res.table.fl$concentration, sep = "|"),
                                "slope<sub>max</sub>" = ifelse(res.table.fl$max_slope.linfit==0 | is.na(res.table.fl$max_slope.linfit), "", ifelse(is.na(res.table.fl$max_slope2.linfit), round(as.numeric(res.table.fl$max_slope.linfit), 3), paste0("<strong>", round(as.numeric(res.table.fl$max_slope.linfit), 3), "</strong>", " (", round(as.numeric(res.table.fl$max_slope2.linfit), 3), ")"))),
                                "t<sub>D</sub>" = ifelse(res.table.fl$max_slope.linfit==0 | is.na(res.table.fl$max_slope.linfit), "",  ifelse(is.na(res.table.fl$max_slope2.linfit), round(log(2)/as.numeric(res.table.fl$max_slope.linfit), 2), paste0("<strong>", round(log(2)/as.numeric(res.table.fl$max_slope.linfit), 2), "</strong>", " (", round(log(2)/as.numeric(res.table.fl$max_slope2.linfit), 2), ")"))),
@@ -8543,17 +8546,17 @@ server <- function(input, output, session){
                                "x<sub>end</sub><br>(slope<sub>max</sub>)" = ifelse((is.na(res.table.fl$max_slope2.linfit)), round(as.numeric(res.table.fl$x.mu.end.linfit), 2), paste0("<strong>", round(as.numeric(res.table.fl$x.mu.end.linfit), 2), "</strong>", " (", round(as.numeric(res.table.fl$x.mu2.end.linfit), 2), ")")),
                                "R<sup>2</sup><br>(linear fit)" = ifelse((is.na(res.table.fl$max_slope2.linfit)), round(as.numeric(res.table.fl$r2mu.linfit), 3), paste0("<strong>", round(as.numeric(res.table.fl$r2mu.linfit), 3), "</strong>", " (", round(as.numeric(res.table.fl$r2mu.linfit), 3), ")")),
                                stringsAsFactors = FALSE, check.names = F)
-    
+
     table_linear
-    
+
   })
-  
+
   output$results_table_fluorescence_linear <- DT::renderDT({
     DT::datatable(table_fluorescence_linear(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   table_fluorescence_linear_group <- reactive({
     flTable <- results$fluorescence$flFit$flTable
     table <-  QurvE:::table_group_fluorescence_linear(flTable)
@@ -8562,13 +8565,13 @@ server <- function(input, output, session){
                          "x<sub>end</sub><br>(\u03bc<sub>max</sub>)")
     table
   })
-  
+
   output$results_table_fluorescence_linear_group <- DT::renderDT({
     DT::datatable(table_fluorescence_linear_group(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   table_fluorescence_spline <- reactive({
     res.table.fl <- results$fluorescence$flFit$flTable
     table_spline <- data.frame("Sample|Replicate|Conc." = paste(res.table.fl$TestId, res.table.fl$AddId, res.table.fl$concentration, sep = "|"),
@@ -8580,13 +8583,13 @@ server <- function(input, output, session){
                                "smooth.<br>fac" = res.table.fl$smooth.spline, check.names = F)
     table_spline
   })
-  
+
   output$results_table_fluorescence_spline <- DT::renderDT({
     DT::datatable(table_fluorescence_spline(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   table_fluorescence_spline_group <- reactive({
     flTable <- results$fluorescence$flFit$flTable
     QurvE:::table_group_fluorescence_spline(flTable)
@@ -8594,13 +8597,13 @@ server <- function(input, output, session){
                          "\u0394Y", "y<sub>max</sub>", "x(slope<sub>max</sub>)")
     table
   })
-  
+
   output$results_table_fluorescence_spline_group <- DT::renderDT({
     DT::datatable(table_fluorescence_spline_group(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   table_fluorescence_spline_bt <- reactive({
     res.table.fl <- results$fluorescence$flFit$flTable
     table_spline <- data.frame("Sample|Replicate|Conc." = paste(res.table.fl$TestId, res.table.fl$AddId, res.table.fl$concentration, sep = "|"),
@@ -8642,13 +8645,13 @@ server <- function(input, output, session){
                                "smooth.<br>fac" = res.table.fl$smooth.spline, check.names = F)
     table_spline
   })
-  
+
   output$results_table_fluorescence_spline_bt <- DT::renderDT({
     DT::datatable(table_fluorescence_spline_bt(),
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
                   escape = FALSE)
   })
-  
+
   table_fluorescence_dr_spline <- reactive({
     try({
       res.table.dr <- results$fluorescence$drFit$drTable
@@ -8678,14 +8681,14 @@ server <- function(input, output, session){
       table_dr
     })
   })
-  
+
   output$results_table_fluorescence_dr_spline <- DT::renderDT({
     table_dr <- table_fluorescence_dr_spline()
     DT::datatable(table_dr,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "All")) ),
                   escape = FALSE)
   })
-  
+
   table_fluorescence_dr_model <- reactive({
     try({
       res.table.dr <- results$fluorescence$drFit$drTable
@@ -8696,7 +8699,7 @@ server <- function(input, output, session){
                              "Cooperativity (n)" = round(as.numeric(res.table.dr[["n"]]), 3),
                              "Response(EC50)" = round(as.numeric(res.table.dr[["yEC50"]]), 3),
                              "Maximum FL" = round(as.numeric(res.table.dr[["y.max"]]), 3),
-                             
+
                              stringsAsFactors = FALSE, check.names = F)
       if(!is.null(res.table.dr)){
         if(results$fluorescence$control$log.x.dr){
@@ -8713,14 +8716,14 @@ server <- function(input, output, session){
       table_dr
     })
   })
-  
+
   output$results_table_fluorescence_dr_model <- DT::renderDT({
     table_dr_model <- table_fluorescence_dr_model()
     DT::datatable(table_dr_model,
                   options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "All")) ),
                   escape = FALSE)
   })
-  
+
   ###____Table Download____####
   output$download_table_fluorescence_linear <- downloadHandler(
     filename = function() {
@@ -8732,7 +8735,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_fluorescence_linear_group <- downloadHandler(
     filename = function() {
       paste("fluorescence_results_linear_fits_grouped", ".csv", sep="")
@@ -8743,7 +8746,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_fluorescence_spline <- downloadHandler(
     filename = function() {
       paste("fluorescence_results_spline_fits", ".csv", sep="")
@@ -8754,7 +8757,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_fluorescence_spline_group <- downloadHandler(
     filename = function() {
       paste("fluorescence_results_spline_fits_grouped", ".csv", sep="")
@@ -8765,7 +8768,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_fluorescence_spline_bt <- downloadHandler(
     filename = function() {
       paste("fluorescence_results_spline_bootstrappings", ".csv", sep="")
@@ -8776,7 +8779,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_fluorescence_dr_spline <- downloadHandler(
     filename = function() {
       paste("fluorescence_results_dose-response_analysis_spline", ".csv", sep="")
@@ -8787,7 +8790,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   output$download_table_fluorescence_dr_model <- downloadHandler(
     filename = function() {
       paste("fluorescence_results_dose-response_analysis_model", ".csv", sep="")
@@ -8798,7 +8801,7 @@ server <- function(input, output, session){
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
-  
+
   # Validate ####
   ## Growth #####
   observe({
@@ -8825,13 +8828,13 @@ server <- function(input, output, session){
       }
     }
   })
-  
+
   #### Hide [Restore Fit] buttons when starting the app
   hide("restore_growth_linear"); hide("restore_growth_spline"); hide("restore_growth_model")
   hide("restore_dr_growth"); hide("restore_dr_growth2"); hide("restore_dr_growth3");
   hide("restore_dr_fluorescence"); hide("restore_dr_fluorescence2"); hide("restore_dr_fluorescence3")
   # hide("restore_dr_spline_individual_fluorescence")
-  
+
   #### Hide [Restore Fit] buttons whenever a sample is changed
   observeEvent(input$sample_validate_growth_linear, {
     hide("restore_growth_linear")
@@ -8842,14 +8845,14 @@ server <- function(input, output, session){
   observeEvent(input$sample_validate_growth_model, {
     hide("restore_growth_model")
   })
-  
-  
+
+
   #------- Initialize the Memory to store settings
   selected_vals_validate_growth <- reactiveValues(sample_validate_growth_linear = 1,
                                                   sample_validate_growth_spline = 1,
                                                   sample_validate_growth_model = 1,
                                                   sample_validate_growth_spline_bt = 1)
-  
+
   #------ Whenever any of the inputs are changed, it only modifies the memory
   observe({
     req(input$sample_validate_growth_linear)
@@ -8867,10 +8870,10 @@ server <- function(input, output, session){
     req(input$sample_validate_growth_spline_bt)
     selected_vals_validate_growth$sample_validate_growth_spline_bt <- input$sample_validate_growth_spline_bt
   })
-  
+
   ### Linear Fits ####
-  
-  
+
+
   selected_inputs_validate_growth_linear_sample <- reactive({
     results <- results$growth
     if(is.null(results)) return("")
@@ -8881,19 +8884,19 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "sample_validate_growth_linear",
                       choices = selected_inputs_validate_growth_linear_sample(),
                       selected = selected_vals_validate_growth$sample_validate_growth_linear
     )})
-  
+
   logy_validate_growth_plot_linear <- reactive({
     if(input$logy_validate_growth_plot_linear) return("y")
     else return("")
   })
-  
+
   validate_growth_plot_linear <- reactive({
     results <- results$growth
     # Define x- and y-axis limits
@@ -8904,7 +8907,7 @@ server <- function(input, output, session){
       y.lim <- c(as.numeric(input$y_range_min_validate_growth_plot_linear),
                  as.numeric(input$y_range_max_validate_growth_plot_linear))
     }
-    
+
     if(any(input$y_range_min_derivative_validate_growth_plot_linear == "",
            input$y_range_max_derivative_validate_growth_plot_linear == "")){
       ylim.deriv <- NULL
@@ -8912,7 +8915,7 @@ server <- function(input, output, session){
       ylim.deriv <- c(as.numeric(input$y_range_min_derivative_validate_growth_plot_linear),
                       as.numeric(input$y_range_max_derivative_validate_growth_plot_linear))
     }
-    
+
     if(any(input$x_range_min_validate_growth_plot_linear == "",
            input$x_range_max_validate_growth_plot_linear == "")){
       x.lim <- NULL
@@ -8964,7 +8967,7 @@ server <- function(input, output, session){
                 selected_vals_validate_growth$sample_validate_growth_linear
               )]],
               pch = input$shape_type_validate_growth_plot_linear,
-              
+
               log = logy_validate_growth_plot_linear(),
               cex.point = input$shape_size_validate_growth_plot_linear,
               cex.lab = input$axis_size_validate_growth_plot_linear,
@@ -8979,15 +8982,15 @@ server <- function(input, output, session){
       }
     }
   }
-  
+
   )
-  
+
   output$validate_growth_plot_linear <- renderPlot({
     validate_growth_plot_linear()
   })
-  
+
   lin.rerun.param <- reactiveValues()
-  
+
   observeEvent(input$rerun_growth_linear, {
     # display a modal dialog with a header, textinput and action buttons
     showModal(
@@ -9022,23 +9025,23 @@ server <- function(input, output, session){
                                   icon=icon("question"),
                                   style="padding:2px; font-size:100%"),
                      style="float:left")
-                   
+
             )
           )
         )
       )
     )
   })
-  
+
   # Re-run selected linear fit with user-defined parameters upon click on 'submit'
   observeEvent(input$submit.rerun.linear.growth, {
     if(!is.null(results$growth$gcFit)){
-      
+
       showModal(modalDialog("Fitting sample data...", footer = NULL))
-      
+
       # store previous fit in memory
       selected_vals_validate_growth$restore_growth_linear <- results$growth$gcFit$gcFittedLinear[[selected_vals_validate_growth$sample_validate_growth_linear]]
-      
+
       # Re-run fit and store in results object
       actwell <- results$growth$gcFit$gcFittedLinear[[selected_vals_validate_growth$sample_validate_growth_linear]]$raw.data
       acttime <- results$growth$gcFit$gcFittedLinear[[selected_vals_validate_growth$sample_validate_growth_linear]]$raw.time
@@ -9062,7 +9065,7 @@ server <- function(input, output, session){
         }
       }
       control_new$max.growth <- ifelse(!is.na(as.numeric(input$max.growth.lin.rerun)), as.numeric(input$max.growth.lin.rerun), control$max.growth)
-      
+
       quota_new <- ifelse(!is.na(as.numeric(input$quota.rerun)), as.numeric(input$quota.rerun), 0.95)
       try(
         results$growth$gcFit$gcFittedLinear[[selected_vals_validate_growth$sample_validate_growth_linear]] <-
@@ -9074,19 +9077,19 @@ server <- function(input, output, session){
       # Update gcTable with new results
       res.table.gc <- results$growth$gcFit$gcTable
       fit.summary <- QurvE:::summary.gcFitLinear(results$growth$gcFit$gcFittedLinear[[selected_vals_validate_growth$sample_validate_growth_linear]])
-      
+
       sample.ndx <- ifelse(is.numeric(selected_vals_validate_growth$sample_validate_growth_linear),
                            selected_vals_validate_growth$sample_validate_growth_linear,
                            match(selected_vals_validate_growth$sample_validate_growth_linear, names(results$growth$gcFit$gcFittedLinear)))
       results$growth$gcFit$gcTable[sample.ndx, colnames(res.table.gc) %in% colnames(fit.summary)] <- fit.summary
-      
+
       # Re-run drFit if respective fit type (linear/spline/model) was chosen as dr.parameter
       dr.parameter.fit.method <- gsub(".+\\.", "", results$growth$control$dr.parameter)
-      
+
       if(length(results$growth$drFit) > 1 && dr.parameter.fit.method == "linfit"){
         # Store previous drFit in memory
         selected_vals_validate_growth$restore_growth_drFit <- results$growth$drFit
-        
+
         # Re-run drFit
         if (is.null(input$smoothing_factor_growth_dr) || is.na(input$smoothing_factor_growth_dr) || input$smoothing_factor_growth_dr == "NULL" || input$smoothing_factor_growth_dr == "") {
           smooth.dr = NULL
@@ -9099,7 +9102,7 @@ server <- function(input, output, session){
           nboot.dr <- as.numeric(input$number_of_bootstrappings_dr_growth)
         }
         showModal(modalDialog("Re-calculating dose-response analysis...", footer = NULL))
-        
+
         try(
           results$growth$drFit <-
             suppressWarnings(
@@ -9115,14 +9118,14 @@ server <- function(input, output, session){
             )
         )
       }
-      
+
       # Show [Restore fit] button
       show("restore_growth_linear")
     }
-    
+
     removeModal()
   })
-  
+
   # Restore previous linear fit upon click on [Restore Fit]
   observeEvent(input$restore_growth_linear, {
     # restore previous fit from memory
@@ -9133,7 +9136,7 @@ server <- function(input, output, session){
     }
     hide("restore_growth_linear")
   })
-  
+
   output$download_growth_validate_linear <- downloadHandler(
     filename = function() {
       paste("linear_fit_",  gsub(" \\| ", "_", selected_vals_validate_growth$sample_validate_growth_linear), input$format_download_growth_validate_linear, sep="")
@@ -9150,7 +9153,7 @@ server <- function(input, output, session){
                          width = input$width_download_growth_validate_linear,
                          height = input$height_download_growth_validate_linear)
         }
-        
+
       } else {
         grDevices::png(file = file,
                        width = input$width_download_growth_validate_linear,
@@ -9169,7 +9172,7 @@ server <- function(input, output, session){
         y.lim <- c(as.numeric(input$y_range_min_validate_growth_plot_linear),
                    as.numeric(input$y_range_max_validate_growth_plot_linear))
       }
-      
+
       if(any(input$y_range_min_derivative_validate_growth_plot_linear == "",
              input$y_range_max_derivative_validate_growth_plot_linear == "")){
         ylim.deriv <- NULL
@@ -9177,7 +9180,7 @@ server <- function(input, output, session){
         ylim.deriv <- c(as.numeric(input$y_range_min_derivative_validate_growth_plot_linear),
                         as.numeric(input$y_range_max_derivative_validate_growth_plot_linear))
       }
-      
+
       if(any(input$x_range_min_validate_growth_plot_linear == "",
              input$x_range_max_validate_growth_plot_linear == "")){
         x.lim <- NULL
@@ -9185,8 +9188,8 @@ server <- function(input, output, session){
         x.lim <- c(as.numeric(input$x_range_min_validate_growth_plot_linear),
                    as.numeric(input$x_range_max_validate_growth_plot_linear))
       }
-      
-      
+
+
       if (length(results$gcFit$gcFittedLinear[[ifelse(
         selected_vals_validate_growth$sample_validate_growth_linear == "1" ||
         is.null(
@@ -9231,9 +9234,9 @@ server <- function(input, output, session){
       dev.off()
     },
     contentType = ifelse(input$format_download_growth_validate_linear == ".pdf", "image/pdf", "image/png")
-    
+
   )
-  
+
   ### Spline Fits ####
   selected_inputs_validate_growth_spline_sample <- reactive({
     results <- results$growth
@@ -9245,7 +9248,7 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "sample_validate_growth_spline",
@@ -9253,8 +9256,8 @@ server <- function(input, output, session){
                       selected = selected_vals_validate_growth$sample_validate_growth_spline
     )
   })
-  
-  
+
+
   output$validate_growth_plot_spline <- renderPlot({
     results <- results$growth
     if(length(results$gcFit$gcFittedSplines[[ifelse(
@@ -9302,9 +9305,9 @@ server <- function(input, output, session){
       removeModal()
     }
   })
-  
+
   spline.rerun.param <- reactiveValues()
-  
+
   observeEvent(input$rerun_growth_spline, {
     # display a modal dialog with a header, textinput and action buttons
     showModal(
@@ -9330,27 +9333,27 @@ server <- function(input, output, session){
                                   icon=icon("question"),
                                   style="padding:2px; font-size:100%"),
                      style="float:left")
-                   
+
             )
           )
         )
       )
     )
   })
-  
+
   # Re-run selected spline fit with user-defined parameters upon click on 'submit'
   observeEvent(input$submit.rerun.spline.growth, {
     if(!is.null(results$growth$gcFit)){
       # store previous fit in memory
       selected_vals_validate_growth$restore_growth_spline <- results$growth$gcFit$gcFittedSplines[[selected_vals_validate_growth$sample_validate_growth_spline]]
-      
+
       # Re-run fit and store in results object
       actwell <- results$growth$gcFit$gcFittedSplines[[selected_vals_validate_growth$sample_validate_growth_spline]]$data.in
       acttime <- results$growth$gcFit$gcFittedSplines[[selected_vals_validate_growth$sample_validate_growth_spline]]$time.in
       control <- results$growth$gcFit$gcFittedSplines[[selected_vals_validate_growth$sample_validate_growth_spline]]$control
       control_new <- control
       gcID <- results$growth$gcFit$gcFittedSplines[[selected_vals_validate_growth$sample_validate_growth_spline]]$gcID
-      
+
       control_new$smooth.gc <- ifelse(!is.na(as.numeric(input$smooth.gc.rerun)), as.numeric(input$smooth.gc.rerun), control$smooth.gc)
       control_new$t0 <- ifelse(!is.na(as.numeric(input$t0.spline.rerun)), as.numeric(input$t0.spline.rerun), control$t0)
       control_new$tmax <- ifelse(!is.na(as.numeric(input$tmax.spline.rerun)), as.numeric(input$tmax.spline.rerun), control$tmax)
@@ -9364,9 +9367,9 @@ server <- function(input, output, session){
         }
       }
       control_new$max.growth <- ifelse(!is.na(as.numeric(input$max.growth.spline.rerun)), as.numeric(input$max.growth.spline.rerun), control$max.growth)
-      
+
       showModal(modalDialog("Fitting sample data...", footer = NULL))
-      
+
       try(
         results$growth$gcFit$gcFittedSplines[[selected_vals_validate_growth$sample_validate_growth_spline]] <-
           growth.gcFitSpline(acttime, actwell,
@@ -9376,19 +9379,19 @@ server <- function(input, output, session){
       # Update gcTable with new results
       res.table.gc <- results$growth$gcFit$gcTable
       fit.summary <- QurvE:::summary.gcFitSpline(results$growth$gcFit$gcFittedSplines[[selected_vals_validate_growth$sample_validate_growth_spline]])
-      
+
       sample.ndx <- ifelse(is.numeric(selected_vals_validate_growth$sample_validate_growth_spline),
                            selected_vals_validate_growth$sample_validate_growth_spline,
                            match(selected_vals_validate_growth$sample_validate_growth_spline, names(results$growth$gcFit$gcFittedSplines)))
       results$growth$gcFit$gcTable[sample.ndx, colnames(res.table.gc) %in% colnames(fit.summary)] <- fit.summary
-      
+
       # Re-run drFit if respective fit type (linear/spline/model) was chosen as dr.parameter
       dr.parameter.fit.method <- gsub(".+\\.", "", results$growth$control$dr.parameter)
-      
+
       if(length(results$growth$drFit) > 1 && dr.parameter.fit.method == "spline"){
         # Store previous drFit in memory
         selected_vals_validate_growth$restore_growth_drFit <- results$growth$drFit
-        
+
         # Re-run drFit
         if (is.null(input$smoothing_factor_growth_dr) || is.na(input$smoothing_factor_growth_dr) || input$smoothing_factor_growth_dr == "NULL" || input$smoothing_factor_growth_dr == "") {
           smooth.dr = NULL
@@ -9401,7 +9404,7 @@ server <- function(input, output, session){
           nboot.dr <- as.numeric(input$number_of_bootstrappings_dr_growth)
         }
         showModal(modalDialog("Re-calculating dose-response analysis...", footer = NULL))
-        
+
         try(
           results$growth$drFit <-
             suppressWarnings(
@@ -9420,11 +9423,11 @@ server <- function(input, output, session){
       # Show [Restore fit] button
       show("restore_growth_spline")
     }
-    
+
     removeModal()
-    
+
   })
-  
+
   # Restore previous spline fit upon click on [Restore Fit]
   observeEvent(input$restore_growth_spline, {
     # restore previous fit from memory
@@ -9435,7 +9438,7 @@ server <- function(input, output, session){
       results$growth$drFit <- selected_vals_validate_growth$restore_growth_drFit
     }
   })
-  
+
   output$download_growth_validate_spline <- downloadHandler(
     filename = function() {
       paste("spline_fit_",  gsub(" \\| ", "_", selected_vals_validate_growth$sample_validate_growth_spline), input$format_download_growth_validate_spline, sep="")
@@ -9454,19 +9457,19 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_growth_validate_spline,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_growth_validate_spline,
                height = input$height_download_growth_validate_spline,
                dpi = input$dpi_download_growth_validate_spline,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_growth_validate_spline == ".pdf", "image/pdf", "image/png")
-    
+
   )
-  
+
   output$download_growth_validate_spline_values <- downloadHandler(
     filename = function() {
       paste("values_spline_fit_",  gsub(" \\| ", "_", selected_vals_validate_growth$sample_validate_growth_spline), ".csv", sep="")
@@ -9503,7 +9506,7 @@ server <- function(input, output, session){
     },
     contentType = ".csv"
   )
-  
+
   output$download_growth_validate_spline_deriv_values <- downloadHandler(
     filename = function() {
       paste("values_spline_fit_derivative_",  gsub(" \\| ", "_", selected_vals_validate_growth$sample_validate_growth_spline), ".csv", sep="")
@@ -9532,7 +9535,7 @@ server <- function(input, output, session){
     },
     contentType = ".csv"
   )
-  
+
   ### Model Fits ####
   selected_inputs_validate_growth_model_sample <- reactive({
     results <- results$growth
@@ -9544,14 +9547,14 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "sample_validate_growth_model",
                       choices = selected_inputs_validate_growth_model_sample(),
                       selected = selected_vals_validate_growth$sample_validate_growth_model
     )})
-  
+
   output$validate_growth_plot_model <- renderPlot({
     results <- results$growth
     if(length(results$gcFit$gcFittedModels[[ifelse(selected_vals_validate_growth$sample_validate_growth_model == "1"||
@@ -9575,9 +9578,9 @@ server <- function(input, output, session){
       removeModal()
     }
   })
-  
+
   model.rerun.param <- reactiveValues()
-  
+
   observeEvent(input$rerun_growth_model, {
     # display a modal dialog with a header, textinput and action buttons
     showModal(
@@ -9591,23 +9594,23 @@ server <- function(input, output, session){
           checkboxInput(inputId = 'logistic_growth_rerun',
                         label = 'logistic',
                         value = ("logistic" %in% results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$control$model.type)),
-          
+
           checkboxInput(inputId = 'richards_growth_rerun',
                         label = 'Richards',
                         value = ("richards" %in% results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$control$model.type)),
-          
+
           checkboxInput(inputId = 'gompertz_growth_rerun',
                         label = 'Gompertz',
                         value = ("gompertz" %in% results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$control$model.type)),
-          
+
           checkboxInput(inputId = 'extended_gompertz_growth_rerun',
                         label = 'extended Gompertz',
                         value = ("gompertz.exp" %in% results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$control$model.type)),
-          
+
           checkboxInput(inputId = 'huang_growth_rerun',
                         label = 'Huang',
                         value = ("huang" %in% results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$control$model.type)),
-          
+
           checkboxInput(inputId = 'baranyi_growth_rerun',
                         label = 'Baranyi and Roberts',
                         value = ("baranyi" %in% results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$control$model.type))
@@ -9627,27 +9630,27 @@ server <- function(input, output, session){
                                   icon=icon("question"),
                                   style="padding:2px; font-size:100%"),
                      style="float:left")
-                   
+
             )
           )
         )
       )
     )
   })
-  
+
   # Re-run selected model fit with user-defined parameters upon click on 'submit'
   observeEvent(input$submit.rerun.model, {
     if(!is.null(results$growth$gcFit)){
       # store previous fit in memory
       selected_vals_validate_growth$restore_growth_model <- results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]
-      
+
       # Re-run fit and store in results object
       actwell <- results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$data.in
       acttime <- results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$time.in
       control <- results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$control
       control_new <- control
       gcID <- results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$gcID
-      
+
       control_new$t0 <- ifelse(!is.na(as.numeric(input$t0.model.rerun)), as.numeric(input$t0.model.rerun), control$t0)
       min.growth.model.new <- ifelse(!is.na(as.numeric(input$min.growth.model.rerun)), as.numeric(input$min.growth.model.rerun), control$min.growth)
       if(is.numeric(min.growth.model.new)){
@@ -9666,32 +9669,32 @@ server <- function(input, output, session){
       if(input$extended_gompertz_growth_rerun == TRUE) models <- c(models, "gompertz.exp")
       if(input$huang_growth_rerun == TRUE) models <- c(models, "huang")
       if(input$baranyi_growth_rerun == TRUE) models <- c(models, "baranyi")
-      
+
       control_new$model.type <- models
       showModal(modalDialog("Fitting sample data...", footer = NULL))
-      
+
       try(results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]] <-
             growth.gcFitModel(acttime, actwell,
                               gcID = gcID,
                               control = control_new))
-      
+
       # Update gcTable with new results
       res.table.gc <- results$growth$gcFit$gcTable
       fit.summary <- QurvE:::summary.gcFitModel(results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]])
-      
+
       sample.ndx <- ifelse(is.numeric(selected_vals_validate_growth$sample_validate_growth_model),
                            selected_vals_validate_growth$sample_validate_growth_model,
                            match(selected_vals_validate_growth$sample_validate_growth_model, names(results$growth$gcFit$gcFittedModels)))
       results$growth$gcFit$gcTable[sample.ndx, colnames(res.table.gc) %in% colnames(fit.summary)] <- fit.summary
       results$growth$gcFit$gcTable[sample.ndx, "used.model"] <- results$growth$gcFit$gcFittedModels[[selected_vals_validate_growth$sample_validate_growth_model]]$model
-      
+
       # Re-run drFit if respective fit type (linear/spline/model) was chosen as dr.parameter
       dr.parameter.fit.method <- gsub(".+\\.", "", results$growth$control$dr.parameter)
-      
+
       if(length(results$growth$drFit) > 1 && dr.parameter.fit.method == "model"){
         # Store previous drFit in memory
         selected_vals_validate_growth$restore_growth_drFit <- results$growth$drFit
-        
+
         # Re-run drFit
         if (is.null(input$smoothing_factor_growth_dr) || is.na(input$smoothing_factor_growth_dr) || input$smoothing_factor_growth_dr == "NULL" || input$smoothing_factor_growth_dr == "") {
           smooth.dr = NULL
@@ -9704,7 +9707,7 @@ server <- function(input, output, session){
           nboot.dr <- as.numeric(input$number_of_bootstrappings_dr_growth)
         }
         showModal(modalDialog("Re-calculating dose-response analysis...", footer = NULL))
-        
+
         try(
           results$growth$drFit <-
             suppressWarnings(
@@ -9720,15 +9723,15 @@ server <- function(input, output, session){
             )
         )
       }
-      
+
       # Show [Restore fit] button
       show("restore_growth_model")
     }
-    
+
     removeModal()
-    
+
   })
-  
+
   # Restore previous model fit upon click on [Restore Fit]
   observeEvent(input$restore_growth_model, {
     # store previous fit from memory
@@ -9739,7 +9742,7 @@ server <- function(input, output, session){
     }
     hide("restore_growth_model")
   })
-  
+
   output$download_growth_validate_model <- downloadHandler(
     filename = function() {
       paste("model_fit_",  gsub(" \\| ", "_", selected_vals_validate_growth$sample_validate_growth_model), input$format_download_growth_validate_model, sep="")
@@ -9758,19 +9761,19 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_growth_validate_model,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_growth_validate_model,
                height = input$height_download_growth_validate_model,
                dpi = input$dpi_download_growth_validate_model,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_growth_validate_model == ".pdf", "image/pdf", "image/png")
-    
+
   )
-  
+
   ### Spline Fits BT ####
   # observe({
   #   if(length(results$growth$drFit) > 1 && length(results$growth$drFit$drTable) > 1){
@@ -9779,7 +9782,7 @@ server <- function(input, output, session){
   #     hideTab(inputId = "tabsetPanel_Visualize_Growth", target = "tabPanel_Visualize_Growth_DoseResponse")
   #   }
   # })
-  
+
   selected_inputs_sample_validate_growth_spline_bt <- reactive({
     results <- results$growth
     if(is.null(results)) return("")
@@ -9790,17 +9793,17 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "sample_validate_growth_spline_bt",
                       choices = selected_inputs_sample_validate_growth_spline_bt(),
                       selected = selected_vals_validate_growth$sample_validate_growth_spline_bt
     )})
-  
+
   validate_growth_plot_spline_bt <- reactive({
     results <- results$growth
-    
+
     # Define x- and y-axis limits
     if(any(input$y_range_min_validate_growth_spline_bt == "",
            input$y_range_max_validate_growth_spline_bt == "")){
@@ -9809,7 +9812,7 @@ server <- function(input, output, session){
       y.lim <- c(as.numeric(input$y_range_min_validate_growth_spline_bt),
                  as.numeric(input$y_range_max_validate_growth_spline_bt))
     }
-    
+
     if(any(input$y_range_min_derivative_validate_growth_spline_bt == "",
            input$y_range_max_derivative_validate_growth_spline_bt == "")){
       ylim.deriv <- NULL
@@ -9817,7 +9820,7 @@ server <- function(input, output, session){
       ylim.deriv <- c(as.numeric(input$y_range_min_derivative_validate_growth_spline_bt),
                       as.numeric(input$y_range_max_derivative_validate_growth_spline_bt))
     }
-    
+
     if(any(input$x_range_min_validate_growth_spline_bt == "",
            input$x_range_max_validate_growth_spline_bt == "")){
       x.lim <- NULL
@@ -9828,7 +9831,7 @@ server <- function(input, output, session){
     if(length(results$gcFit$gcBootSplines[[ifelse(selected_vals_validate_growth$sample_validate_growth_spline_bt == "1"||
                                                   selected_vals_validate_growth$sample_validate_growth_spline_bt == ""||
                                                   is.null(selected_vals_validate_growth$sample_validate_growth_spline_bt), 1, selected_vals_validate_growth$sample_validate_growth_spline_bt)]]) > 1){
-      
+
       try(
         plot.gcBootSpline(results$gcFit$gcBootSplines[[ifelse(selected_vals_validate_growth$sample_validate_growth_spline_bt == "1"||
                                                                 selected_vals_validate_growth$sample_validate_growth_spline_bt == ""||
@@ -9848,11 +9851,11 @@ server <- function(input, output, session){
       )
     }
   })
-  
+
   output$validate_growth_plot_spline_bt <- renderPlot({
     validate_growth_plot_spline_bt()
   })
-  
+
   output$download_growth_validate_spline_bt <- downloadHandler(
     filename = function() {
       paste("spline_fit_bootstrap_",  gsub(" \\| ", "_", input$sample_validate_growth_spline_bt), input$format_download_growth_validate_spline_bt, sep="")
@@ -9869,7 +9872,7 @@ server <- function(input, output, session){
                          width = input$width_download_growth_validate_spline_bt,
                          height = input$height_download_growth_validate_spline_bt)
         }
-        
+
       } else {
         grDevices::png(file = file,
                        width = input$width_download_growth_validate_spline_bt,
@@ -9882,7 +9885,7 @@ server <- function(input, output, session){
                                                               is.null(selected_vals_validate_growth$sample_validate_growth_spline_bt),
                                                             1,
                                                             selected_vals_validate_growth$sample_validate_growth_spline_bt)]]
-      
+
       ## Define x- and y-axis limits
       if(any(input$y_range_min_validate_growth_spline_bt == "",
              input$y_range_max_validate_growth_spline_bt == "")){
@@ -9891,7 +9894,7 @@ server <- function(input, output, session){
         y.lim <- c(as.numeric(input$y_range_min_validate_growth_spline_bt),
                    as.numeric(input$y_range_max_validate_growth_spline_bt))
       }
-      
+
       if(any(input$y_range_min_derivative_validate_growth_spline_bt == "",
              input$y_range_max_derivative_validate_growth_spline_bt == "")){
         ylim.deriv <- NULL
@@ -9899,7 +9902,7 @@ server <- function(input, output, session){
         ylim.deriv <- c(as.numeric(input$y_range_min_derivative_validate_growth_spline_bt),
                         as.numeric(input$y_range_max_derivative_validate_growth_spline_bt))
       }
-      
+
       if(any(input$x_range_min_validate_growth_spline_bt == "",
              input$x_range_max_validate_growth_spline_bt == "")){
         x.lim <- NULL
@@ -9907,7 +9910,7 @@ server <- function(input, output, session){
         x.lim <- c(as.numeric(input$x_range_min_validate_growth_spline_bt),
                    as.numeric(input$x_range_max_validate_growth_spline_bt))
       }
-      
+
       plot.gcBootSpline(results,
                         pch = input$shape_type_validate_growth_spline_bt,
                         cex.point = input$shape_size_validate_growth_spline_bt,
@@ -9920,7 +9923,7 @@ server <- function(input, output, session){
                         deriv = input$plot_derivative_growth_spline_bt,
                         combine = TRUE
       )
-      
+
       dev.off()
     },
     contentType = ifelse(input$format_download_growth_validate_spline_bt == ".pdf", "image/pdf", "image/png")
@@ -9954,14 +9957,14 @@ server <- function(input, output, session){
   observeEvent(input$sample_validate_fluorescence_spline, {
     hide("restore_fluorescence_spline")
   })
-  
-  
+
+
   #------- Initialize the Memory to store settings
   selected_vals_validate_fluorescence <- reactiveValues(sample_validate_fluorescence_linear = 1,
                                                         sample_validate_fluorescence_spline = 1,
                                                         sample_validate_fluorescence_spline_bt = 1
   )
-  
+
   #------ Whenever any of the inputs are changed, it only modifies the memory
   observe({
     req(input$sample_validate_fluorescence_linear)
@@ -9975,9 +9978,9 @@ server <- function(input, output, session){
     req(input$sample_validate_fluorescence_spline_bt)
     selected_vals_validate_fluorescence$sample_validate_fluorescence_spline_bt <- input$sample_validate_fluorescence_spline_bt
   })
-  
+
   ### Linear Fits ####
-  
+
   selected_inputs_validate_fluorescence_linear_sample <- reactive({
     results <- results$fluorescence
     if(is.null(results)) return("")
@@ -9988,19 +9991,19 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "sample_validate_fluorescence_linear",
                       choices = selected_inputs_validate_fluorescence_linear_sample(),
                       selected = selected_vals_validate_fluorescence$sample_validate_fluorescence_linear
     )})
-  
+
   logy_validate_fluorescence_plot_linear <- reactive({
     if(input$logy_validate_fluorescence_plot_linear) return("y")
     else return("")
   })
-  
+
   # Render plot
   output$validate_fluorescence_plot_linear <- renderPlot({
     results <- results$fluorescence
@@ -10012,7 +10015,7 @@ server <- function(input, output, session){
       y.lim <- c(as.numeric(input$y_range_min_validate_fluorescence_plot_linear),
                  as.numeric(input$y_range_max_validate_fluorescence_plot_linear))
     }
-    
+
     if(any(input$y_range_min_derivative_validate_fluorescence_plot_linear == "",
            input$y_range_max_derivative_validate_fluorescence_plot_linear == "")){
       ylim.deriv <- NULL
@@ -10020,7 +10023,7 @@ server <- function(input, output, session){
       ylim.deriv <- c(as.numeric(input$y_range_min_derivative_validate_fluorescence_plot_linear),
                       as.numeric(input$y_range_max_derivative_validate_fluorescence_plot_linear))
     }
-    
+
     if(any(input$x_range_min_validate_fluorescence_plot_linear == "",
            input$x_range_max_validate_fluorescence_plot_linear == "")){
       x.lim <- NULL
@@ -10031,7 +10034,7 @@ server <- function(input, output, session){
     if(length(results$flFit$flFittedLinear[[ifelse(selected_vals_validate_fluorescence$sample_validate_fluorescence_linear == "1"||
                                                    selected_vals_validate_fluorescence$sample_validate_fluorescence_linear == "" ||
                                                    is.null(selected_vals_validate_fluorescence$sample_validate_fluorescence_linear), 1, selected_vals_validate_fluorescence$sample_validate_fluorescence_linear)]]) > 1){
-      
+
       try(
         suppressWarnings(
           plot.flFitLinear(results$flFit$flFittedLinear[[ifelse(selected_vals_validate_fluorescence$sample_validate_fluorescence_linear == "1" || is.null(selected_vals_validate_fluorescence$sample_validate_fluorescence_linear), 1, selected_vals_validate_fluorescence$sample_validate_fluorescence_linear)]],
@@ -10072,9 +10075,9 @@ server <- function(input, output, session){
       }
     }
   })
-  
+
   # lin.rerun.param <- reactiveValues()
-  
+
   observeEvent(input$rerun_fluorescence_linear, {
     # display a modal dialog with a header, textinput and action buttons
     if(results$fluorescence$flFit$flFittedLinear[[ifelse(
@@ -10115,7 +10118,7 @@ server <- function(input, output, session){
                                     icon=icon("question"),
                                     style="padding:2px; font-size:100%"),
                        style="float:left")
-                     
+
               )
             )
           )
@@ -10152,31 +10155,31 @@ server <- function(input, output, session){
                                     icon=icon("question"),
                                     style="padding:2px; font-size:100%"),
                        style="float:left")
-                     
+
               )
             )
           )
         )
       )
     }
-    
+
   })
-  
+
   # Re-run selected linear fit with user-defined parameters upon click on 'submit'
   observeEvent(input$submit.rerun.linear.fluorescence, {
     if(!is.null(results$fluorescence$flFit)){
-      
+
       showModal(modalDialog("Fitting sample data...", footer = NULL))
       # store previous fit in memory
       selected_vals_validate_fluorescence$restore_fluorescence_linear <- results$fluorescence$flFit$flFittedLinear[[selected_vals_validate_fluorescence$sample_validate_fluorescence_linear]]
-      
+
       # Re-run fit and store in results object
       actwell <- results$fluorescence$flFit$flFittedLinear[[selected_vals_validate_fluorescence$sample_validate_fluorescence_linear]]$raw.fl
       acttime <- results$fluorescence$flFit$flFittedLinear[[selected_vals_validate_fluorescence$sample_validate_fluorescence_linear]]$raw.x
       control <- results$fluorescence$flFit$flFittedLinear[[selected_vals_validate_fluorescence$sample_validate_fluorescence_linear]]$control
       control_new <- control
       ID <- results$fluorescence$flFit$flFittedLinear[[selected_vals_validate_fluorescence$sample_validate_fluorescence_linear]]$ID
-      
+
       lin.h.new <- ifelse(!is.na(as.numeric(input$lin.h.rerun.fluorescence)), as.numeric(input$lin.h.rerun.fluorescence), control$lin.h)
       if(!is.na(lin.h.new)) control_new$lin.h <- lin.h.new
       control_new$lin.R2 <- ifelse(!is.na(as.numeric(input$lin.R2.rerun.fluorescence)), as.numeric(input$lin.R2.rerun.fluorescence), control$lin.R2)
@@ -10187,7 +10190,7 @@ server <- function(input, output, session){
       control_new$tmax <- ifelse(!is.na(input$tmax.lin.rerun.fluorescence) && !is.null(input$tmax.lin.rerun.fluorescence) && input$tmax.lin.rerun.fluorescence != "",
                                  as.numeric(input$tmax.lin.rerun.fluorescence),
                                  control$tmax)
-      
+
       min.growth.lin.new <- ifelse(!is.na(input$min.growth.lin.rerun.fluorescence) && !is.null(input$min.growth.lin.rerun.fluorescence) && input$min.growth.lin.rerun.fluorescence != "",
                                    as.numeric(input$min.growth.lin.rerun.fluorescence),
                                    control$min.growth)
@@ -10203,7 +10206,7 @@ server <- function(input, output, session){
       }
       control_new$max.growth <-  ifelse(!is.na(as.numeric(input$max.growth.lin.rerun.fluorescence)), as.numeric(input$max.growth.lin.rerun.fluorescence), control$max.growth)
       quota_new <- ifelse(!is.na(as.numeric(input$quota.rerun.fluorescence)), as.numeric(input$quota.rerun.fluorescence), 0.95)
-      
+
       if(control$x_type == "time"){
         try(
           results$fluorescence$flFit$flFittedLinear[[selected_vals_validate_fluorescence$sample_validate_fluorescence_linear]] <-
@@ -10221,23 +10224,23 @@ server <- function(input, output, session){
                         quota = quota_new)
         )
       }
-      
+
       # Update gcTable with new results
       res.table.fl <- results$fluorescence$flFit$flTable
       fit.summary <- QurvE:::summary.flFitLinear(results$fluorescence$flFit$flFittedLinear[[selected_vals_validate_fluorescence$sample_validate_fluorescence_linear]])
-      
+
       sample.ndx <- ifelse(is.numeric(selected_vals_validate_fluorescence$sample_validate_fluorescence_linear),
                            selected_vals_validate_fluorescence$sample_validate_fluorescence_linear,
                            match(selected_vals_validate_fluorescence$sample_validate_fluorescence_linear, names(results$fluorescence$flFit$flFittedLinear)))
       results$fluorescence$flFit$flTable[sample.ndx, colnames(res.table.fl) %in% colnames(fit.summary)] <- fit.summary
-      
+
       # Re-run drFit if respective fit type (linear/spline) was chosen as dr.parameter
       dr.parameter.fit.method <- gsub(".+\\.", "", results$fluorescence$control$dr.parameter)
-      
+
       if(length(results$fluorescence$drFit) > 1 && dr.parameter.fit.method == "linfit"){
         # Store previous drFit in memory
         selected_vals_validate_fluorescence$restore_fluorescence_drFit <- results$fluorescence$drFit
-        
+
         # Re-run drFit
         if (is.null(input$smoothing_factor_fluorescence_dr) || is.na(input$smoothing_factor_fluorescence_dr) || input$smoothing_factor_fluorescence_dr == "NULL" || input$smoothing_factor_fluorescence_dr == "") {
           smooth.dr = NULL
@@ -10250,7 +10253,7 @@ server <- function(input, output, session){
           nboot.dr <- as.numeric(input$number_of_bootstrappings_dr_fluorescence)
         }
         showModal(modalDialog("Re-calculating dose-response analysis...", footer = NULL))
-        
+
         try(
           results$fluorescence$drFit <-
             suppressWarnings(
@@ -10269,10 +10272,10 @@ server <- function(input, output, session){
       # Show [Restore fit] button
       show("restore_fluorescence_linear")
     }
-    
+
     removeModal()
   })
-  
+
   # Restore previous linear fit upon click on [Restore Fit]
   observeEvent(input$restore_fluorescence_linear, {
     # store previous fit from memory
@@ -10283,7 +10286,7 @@ server <- function(input, output, session){
     }
     hide("restore_fluorescence_linear")
   })
-  
+
   output$download_fluorescence_validate_linear <- downloadHandler(
     filename = function() {
       paste("linear_fit_",  gsub(" \\| ", "_", selected_vals_validate_fluorescence$sample_validate_fluorescence_linear), input$format_download_fluorescence_validate_linear, sep="")
@@ -10300,7 +10303,7 @@ server <- function(input, output, session){
                          width = input$width_download_fluorescence_validate_linear,
                          height = input$height_download_fluorescence_validate_linear)
         }
-        
+
       } else {
         grDevices::png(file = file,
                        width = input$width_download_fluorescence_validate_linear,
@@ -10319,7 +10322,7 @@ server <- function(input, output, session){
         y.lim <- c(as.numeric(input$y_range_min_validate_fluorescence_plot_linear),
                    as.numeric(input$y_range_max_validate_fluorescence_plot_linear))
       }
-      
+
       if(any(input$y_range_min_derivative_validate_fluorescence_plot_linear == "",
              input$y_range_max_derivative_validate_fluorescence_plot_linear == "")){
         ylim.deriv <- NULL
@@ -10327,7 +10330,7 @@ server <- function(input, output, session){
         ylim.deriv <- c(as.numeric(input$y_range_min_derivative_validate_fluorescence_plot_linear),
                         as.numeric(input$y_range_max_derivative_validate_fluorescence_plot_linear))
       }
-      
+
       if(any(input$x_range_min_validate_fluorescence_plot_linear == "",
              input$x_range_max_validate_fluorescence_plot_linear == "")){
         x.lim <- NULL
@@ -10340,7 +10343,7 @@ server <- function(input, output, session){
                                                      is.null(selected_vals_validate_fluorescence$sample_validate_fluorescence_linear),
                                                      1,
                                                      selected_vals_validate_fluorescence$sample_validate_fluorescence_linear)]]) > 1){
-        
+
         suppressWarnings(
           plot.flFitLinear(results$flFit$flFittedLinear[[ifelse(selected_vals_validate_fluorescence$sample_validate_fluorescence_linear == "1" || is.null(selected_vals_validate_fluorescence$sample_validate_fluorescence_linear), 1, selected_vals_validate_fluorescence$sample_validate_fluorescence_linear)]],
                            log = log,
@@ -10376,9 +10379,9 @@ server <- function(input, output, session){
       dev.off()
     },
     contentType = ifelse(input$format_download_fluorescence_validate_linear == ".pdf", "image/pdf", "image/png")
-    
+
   )
-  
+
   ### Spline Fits ####
   selected_inputs_validate_fluorescence_spline_sample <- reactive({
     results <- results$fluorescence
@@ -10390,15 +10393,15 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "sample_validate_fluorescence_spline",
                       choices = selected_inputs_validate_fluorescence_spline_sample(),
                       selected = selected_vals_validate_fluorescence$sample_validate_fluorescence_spline
     )})
-  
-  
+
+
   output$validate_fluorescence_plot_spline <- renderPlot({
     results <- results$fluorescence
     if(length(results$flFit$flFittedSplines[[ifelse(selected_vals_validate_fluorescence$sample_validate_fluorescence_spline == "1"||
@@ -10430,9 +10433,9 @@ server <- function(input, output, session){
       removeModal()
     }
   })
-  
+
   spline.rerun.param.fluorescence <- reactiveValues()
-  
+
   observeEvent(input$rerun_fluorescence_spline, {
     # display a modal dialog with a header, textinput and action buttons
     if (results$fluorescence$flFit$flFittedSplines[[selected_vals_validate_fluorescence$sample_validate_fluorescence_spline]]$control$x_type == "time") {
@@ -10457,7 +10460,7 @@ server <- function(input, output, session){
                                     icon=icon("question"),
                                     style="padding:2px; font-size:100%"),
                        style="float:left")
-                     
+
               )
             )
           )
@@ -10485,7 +10488,7 @@ server <- function(input, output, session){
                                     icon=icon("question"),
                                     style="padding:2px; font-size:100%"),
                        style="float:left")
-                     
+
               )
             )
           )
@@ -10493,22 +10496,22 @@ server <- function(input, output, session){
       )
     }
   })
-  
+
   # Re-run selected spline fit with user-defined parameters upon click on 'submit'
   observeEvent(input$submit.rerun.spline.fluorescence, {
     if(!is.null(results$fluorescence$flFit)){
-      
+
       showModal(modalDialog("Fitting sample data...", footer = NULL))
       # store previous fit in memory
       selected_vals_validate_fluorescence$restore_fluorescence_spline <- results$fluorescence$flFit$flFittedSplines[[selected_vals_validate_fluorescence$sample_validate_fluorescence_spline]]
-      
+
       # Re-run fit and store in results object
       actwell <- results$fluorescence$flFit$flFittedSplines[[selected_vals_validate_fluorescence$sample_validate_fluorescence_spline]]$fl.in
       acttime <- results$fluorescence$flFit$flFittedSplines[[selected_vals_validate_fluorescence$sample_validate_fluorescence_spline]]$x.in
       control <- results$fluorescence$flFit$flFittedSplines[[selected_vals_validate_fluorescence$sample_validate_fluorescence_spline]]$control
       control_new <- control
       ID <- results$fluorescence$flFit$flFittedSplines[[selected_vals_validate_fluorescence$sample_validate_fluorescence_spline]]$ID
-      
+
       control_new$smooth.fl <- ifelse(!is.na(as.numeric(input$smooth.fl.rerun.fluorescence)), as.numeric(input$smooth.fl.rerun.fluorescence), control$smooth.fl)
       control_new$t0 <- ifelse(!is.na(input$t0.spline.rerun.fluorescence) && !is.null(input$t0.spline.rerun.fluorescence) && input$t0.spline.rerun.fluorescence != "",
                                as.numeric(input$t0.spline.rerun.fluorescence),
@@ -10548,19 +10551,19 @@ server <- function(input, output, session){
       # Update gcTable with new results
       res.table.fl <- results$fluorescence$flFit$flTable
       fit.summary <- QurvE:::summary.flFitSpline(results$fluorescence$flFit$flFittedSplines[[selected_vals_validate_fluorescence$sample_validate_fluorescence_spline]])
-      
+
       sample.ndx <- ifelse(is.numeric(selected_vals_validate_fluorescence$sample_validate_fluorescence_spline),
                            selected_vals_validate_fluorescence$sample_validate_fluorescence_spline,
                            match(selected_vals_validate_fluorescence$sample_validate_fluorescence_spline, names(results$fluorescence$flFit$flFittedSplines)))
       results$fluorescence$flFit$flTable[sample.ndx, colnames(res.table.fl) %in% colnames(fit.summary)] <- fit.summary
-      
+
       # Re-run drFit if respective fit type (linear/spline) was chosen as dr.parameter
       dr.parameter.fit.method <- gsub(".+\\.", "", results$fluorescence$control$dr.parameter)
-      
+
       if(length(results$fluorescence$drFit) > 1 && dr.parameter.fit.method == "spline"){
         # Store previous drFit in memory
         selected_vals_validate_fluorescence$restore_fluorescence_drFit <- results$fluorescence$drFit
-        
+
         # Re-run drFit
         if (is.null(input$smoothing_factor_fluorescence_dr) || is.na(input$smoothing_factor_fluorescence_dr) || input$smoothing_factor_fluorescence_dr == "NULL" || input$smoothing_factor_fluorescence_dr == "") {
           smooth.dr = NULL
@@ -10573,7 +10576,7 @@ server <- function(input, output, session){
           nboot.dr <- as.numeric(input$number_of_bootstrappings_dr_fluorescence)
         }
         showModal(modalDialog("Re-calculating dose-response analysis...", footer = NULL))
-        
+
         try(
           results$fluorescence$drFit <-
             suppressWarnings(
@@ -10589,15 +10592,15 @@ server <- function(input, output, session){
             )
         )
       }
-      
+
       # Show [Restore fit] button
       show("restore_fluorescence_spline")
     }
-    
+
     removeModal()
-    
+
   })
-  
+
   # Restore previous spline fit upon click on [Restore Fit]
   observeEvent(input$restore_fluorescence_spline, {
     # store previous fit from memory
@@ -10608,7 +10611,7 @@ server <- function(input, output, session){
     }
     hide("restore_fluorescence_spline")
   })
-  
+
   output$download_fluorescence_validate_spline <- downloadHandler(
     filename = function() {
       paste("spline_fit_",  gsub(" \\| ", "_", selected_vals_validate_fluorescence$sample_validate_fluorescence_spline), input$format_download_fluorescence_validate_spline, sep="")
@@ -10627,7 +10630,7 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_fluorescence_validate_spline,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_fluorescence_validate_spline,
                height = input$height_download_fluorescence_validate_spline,
@@ -10636,9 +10639,9 @@ server <- function(input, output, session){
       }
     },
     contentType = ifelse(input$format_download_fluorescence_validate_spline == ".pdf", "image/pdf", "image/png")
-    
+
   )
-  
+
   output$download_fluorescence_validate_spline_values <- downloadHandler(
     filename = function() {
       paste("values_spline_fit_",  gsub(" \\| ", "_", selected_vals_validate_fluorescence$sample_validate_fluorescence_spline), ".csv", sep="")
@@ -10668,7 +10671,7 @@ server <- function(input, output, session){
     },
     contentType = ".csv"
   )
-  
+
   output$download_fluorescence_validate_spline_deriv_values <- downloadHandler(
     filename = function() {
       paste("values_spline_fit_derivative_",  gsub(" \\| ", "_", selected_vals_validate_fluorescence$sample_validate_fluorescence_spline), ".csv", sep="")
@@ -10688,7 +10691,7 @@ server <- function(input, output, session){
     },
     contentType = ".csv"
   )
-  
+
   ### Spline Fits BT ####
   selected_inputs_sample_validate_fluorescence_spline_bt <- reactive({
     results <- results$fluorescence
@@ -10700,22 +10703,22 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "sample_validate_fluorescence_spline_bt",
                       choices = selected_inputs_sample_validate_fluorescence_spline_bt(),
                       selected = selected_vals_validate_fluorescence$sample_validate_fluorescence_spline_bt
     )})
-  
+
   validate_fluorescence_plot_spline_bt <- reactive({
     results <- results$fluorescence$flFit$flBootSplines[[ifelse(selected_vals_validate_fluorescence$sample_validate_fluorescence_spline_bt == "1"||
                                                                   selected_vals_validate_fluorescence$sample_validate_fluorescence_spline_bt == ""  ||
                                                                   is.null(selected_vals_validate_fluorescence$sample_validate_fluorescence_spline_bt),
                                                                 1,
                                                                 selected_vals_validate_fluorescence$sample_validate_fluorescence_spline_bt)]]
-    
-    
+
+
     # Define x- and y-axis limits
     if(any(input$y_range_min_validate_fluorescence_spline_bt == "",
            input$y_range_max_validate_fluorescence_spline_bt == "")){
@@ -10724,7 +10727,7 @@ server <- function(input, output, session){
       y.lim <- c(as.numeric(input$y_range_min_validate_fluorescence_spline_bt),
                  as.numeric(input$y_range_max_validate_fluorescence_spline_bt))
     }
-    
+
     if(any(input$y_range_min_derivative_validate_fluorescence_spline_bt == "",
            input$y_range_max_derivative_validate_fluorescence_spline_bt == "")){
       ylim.deriv <- NULL
@@ -10732,7 +10735,7 @@ server <- function(input, output, session){
       ylim.deriv <- c(as.numeric(input$y_range_min_derivative_validate_fluorescence_spline_bt),
                       as.numeric(input$y_range_max_derivative_validate_fluorescence_spline_bt))
     }
-    
+
     if(any(input$x_range_min_validate_fluorescence_spline_bt == "",
            input$x_range_max_validate_fluorescence_spline_bt == "")){
       x.lim <- NULL
@@ -10756,11 +10759,11 @@ server <- function(input, output, session){
       )
     )
   })
-  
+
   output$validate_fluorescence_plot_spline_bt <- renderPlot({
     validate_fluorescence_plot_spline_bt()
   })
-  
+
   output$download_fluorescence_validate_spline_bt <- downloadHandler(
     filename = function() {
       paste("spline_fit_bootstrap_",  gsub(" \\| ", "_", input$sample_validate_fluorescence_spline_bt), input$format_download_fluorescence_validate_spline_bt, sep="")
@@ -10777,7 +10780,7 @@ server <- function(input, output, session){
                          width = input$width_download_fluorescence_validate_spline_bt,
                          height = input$height_download_fluorescence_validate_spline_bt)
         }
-        
+
       } else {
         grDevices::png(file = file,
                        width = input$width_download_fluorescence_validate_spline_bt,
@@ -10795,8 +10798,8 @@ server <- function(input, output, session){
           1,
           selected_vals_validate_fluorescence$sample_validate_fluorescence_spline_bt
         )]]
-      
-      
+
+
       # Define x- and y-axis limits
       if(any(input$y_range_min_validate_fluorescence_spline_bt == "",
              input$y_range_max_validate_fluorescence_spline_bt == "")){
@@ -10805,7 +10808,7 @@ server <- function(input, output, session){
         y.lim <- c(as.numeric(input$y_range_min_validate_fluorescence_spline_bt),
                    as.numeric(input$y_range_max_validate_fluorescence_spline_bt))
       }
-      
+
       if(any(input$y_range_min_derivative_validate_fluorescence_spline_bt == "",
              input$y_range_max_derivative_validate_fluorescence_spline_bt == "")){
         ylim.deriv <- NULL
@@ -10813,7 +10816,7 @@ server <- function(input, output, session){
         ylim.deriv <- c(as.numeric(input$y_range_min_derivative_validate_fluorescence_spline_bt),
                         as.numeric(input$y_range_max_derivative_validate_fluorescence_spline_bt))
       }
-      
+
       if(any(input$x_range_min_validate_fluorescence_spline_bt == "",
              input$x_range_max_validate_fluorescence_spline_bt == "")){
         x.lim <- NULL
@@ -10821,7 +10824,7 @@ server <- function(input, output, session){
         x.lim <- c(as.numeric(input$x_range_min_validate_fluorescence_spline_bt),
                    as.numeric(input$x_range_max_validate_fluorescence_spline_bt))
       }
-      
+
       plot.flBootSpline(results,
                         pch = input$shape_type_validate_fluorescence_spline_bt,
                         cex.point = input$shape_size_validate_fluorescence_spline_bt,
@@ -10840,7 +10843,7 @@ server <- function(input, output, session){
   # Visualize ####
   ## Growth Plots: #####
   ### Group Plots ####
-  
+
   selected_inputs_visualize_growth_group <- reactive({
     results <- results$growth
     if(is.null(results)) return("")
@@ -10851,24 +10854,24 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "samples_visualize_growth_group",
                       choices = selected_inputs_visualize_growth_group()
     )
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "groups_visualize_growth_group",
                       choices = selected_inputs_visualize_growth_group()
     )
   })
-  
+
   growth_group_plot <- reactive({
     results <- results$growth
-    
+
     if(is.null(input$custom_colors_group_plot) || is.na(input$custom_colors_group_plot) || input$custom_colors_group_plot == ""){
       cols <- NULL
     } else {
@@ -10937,12 +10940,12 @@ server <- function(input, output, session){
       )
     }
   })
-  
+
   output$growth_group_plot <- renderPlot({
     growth_group_plot()
   })
-  
-  
+
+
   observe({
     if(input$plot_derivative_growth_group_plot && input$data_type_growth_group_plot == 'spline') h <- 9
     else h <- 6
@@ -10950,7 +10953,7 @@ server <- function(input, output, session){
                       selected = h
     )
   })
-  
+
   output$download_growth_group_plot <- downloadHandler(
     filename = function() {
       paste("growth_group_plot",  input$format_download_growth_group_plot, sep="")
@@ -10969,18 +10972,18 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_growth_group_plot,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_growth_group_plot,
                height = input$height_download_growth_group_plot,
                dpi = input$dpi_download_growth_group_plot,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_growth_group_plot == ".pdf", "image/pdf", "image/png")
   )
-  
+
   ### DR Plots Spline ####
   observe({
     if(length(results$growth$drFit) > 1 && length(results$growth$drFit$drTable) > 1 && results$growth$drFit$control$dr.method == "spline"){
@@ -10989,16 +10992,16 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_Visualize_Growth", target = "tabPanel_Visualize_Growth_DoseResponse_Spline")
     }
   })
-  
+
   output$more_than_one_drfit_spline <- reactive({
     if(length(results$growth$drFit) > 1 && length(results$growth$drFit$drFittedSplines) > 1) return(TRUE)
     else return(FALSE)
   })
   outputOptions(output, 'more_than_one_drfit_spline', suspendWhenHidden=FALSE)
-  
+
   dose_response_growth_plot_combined <- reactive({
     results <- results$growth$drFit
-    
+
     plot.drFit(results,
                combine = TRUE,
                pch = input$shape_type_dose_response_growth_plot,
@@ -11016,17 +11019,17 @@ server <- function(input, output, session){
                log.x = input$log_transform_x_axis_dose_response_growth_plot
     )
   })
-  
+
   rerun_dr_growth_buttons <- reactive({
     list(input$rerun_dr_growth, input$rerun_dr_growth2, input$rerun_dr_growth3)
   })
-  
+
   observeEvent(rerun_dr_growth_buttons(), {
-    
+
     if(input$rerun_dr_growth==0 && input$rerun_dr_growth2==0 && input$rerun_dr_growth3==0){
       return()
     }
-    
+
     select_options <- c()
     if(any("l" %in% results$growth$control$fit.opt)) select_options <- c(select_options, 'mu.linfit', 'lambda.linfit', 'dY.linfit',
                                                                          'A.linfit')
@@ -11034,12 +11037,12 @@ server <- function(input, output, session){
                                                                          'A.spline', 'dY.spline', 'integral.spline')
     if(any("m" %in% results$growth$control$fit.opt)) select_options <- c(select_options, 'mu.model', 'lambda.model', 'A.model', 'integral.model')
     select_options
-    
+
     # display a modal dialog with a header, textinput and action buttons
     showModal(
       modalDialog(
         tags$h2('Please enter adjusted parameters'),
-        
+
         selectInput(inputId = "dr_method_growth_rerun",
                     label = "Method",
                     choices = c("Dose-response models" = "model",
@@ -11049,24 +11052,24 @@ server <- function(input, output, session){
                   title = HTML("<em>dr.method</em>"),
                   placement = "right",
                   content = "Fit either a various dose-response models (Ritz et al., 2015) to response-vs.-concentration data and select the best model based on the lowest AIC, or apply a nonparametric (spline) fit."),
-        
+
         selectInput(inputId = "response_parameter_growth_rerun",
                     label = "Response Parameter",
                     choices = select_options),
         bsPopover(id = "response_parameter_growth_rerun", title = HTML("<em>dr.parameter</em>"), content = "Choose the response parameter to be used for creating a dose response curve.", placement = "top"),
-        
+
         conditionalPanel(
           condition = 'input.dr_method_growth_rerun == "spline"',
           tags$div(title="Perform a log(x+1) transformation on concentration values.",
                    checkboxInput(inputId = 'log_transform_concentration_growth_rerun',
                                  label = 'Log transform concentration')
           ),
-          
+
           tags$div(title="Perform a log(y+1) transformation on response values.",
                    checkboxInput(inputId = 'log_transform_response_growth_rerun',
                                  label = 'Log transform response')
           ),
-          
+
           textInput(
             inputId = 'smoothing_factor_growth_dr_rerun',
             label = 'Smoothing factor dose-response splines',
@@ -11074,7 +11077,7 @@ server <- function(input, output, session){
             placeholder = "NULL (choose automatically)"
           ),
           bsPopover(id = "smoothing_factor_growth_dr_rerun", title = HTML("<em>smooth.dr</em>"), content = "\\'spar\\' argument in the R function smooth.spline() used to create the dose response curve."),
-          
+
           QurvE:::numberInput(
             inputId = 'number_of_bootstrappings_dr_growth_rerun',
             label = 'Number of bootstrappings',
@@ -11094,30 +11097,30 @@ server <- function(input, output, session){
                    div(
                      modalButton('cancel'),
                      style="float:right")
-                   
+
             )
           )
         )
       )
     )
   })
-  
-  
-  
+
+
+
   # Re-run dose-response analysis with user-defined parameters upon click on 'submit'
   observeEvent(input$submit.rerun.dr.growth, {
     if(!is.null(results$growth$drFit)){
-      
+
       showModal(modalDialog("Performing dose-reponse analysis...", footer = NULL))
-      
+
       # store previous fit in memory
       selected_vals_validate_growth$restore_dr_growth <- results$growth$drFit
-      
+
       # Re-run fit and store in results object
       gcTable <- results$growth$gcFit$gcTable
       control <- results$growth$drFit$control
       control_new <- results$growth$control <- control
-      
+
       control_new$dr.method <- input$dr_method_growth_rerun
       control_new$dr.parameter <- input$response_parameter_growth_rerun
       control_new$smooth.dr <- as.numeric(input$smoothing_factor_growth_dr_rerun)
@@ -11126,25 +11129,25 @@ server <- function(input, output, session){
       control_new$nboot.dr <- input$number_of_bootstrappings_dr_growth_rerun
       control_new$log.x.dr <- input$log_transform_concentration_growth_rerun
       control_new$log.y.dr <- input$log_transform_response_growth_rerun
-      
+
       try(
         results$growth$drFit <-
           growth.drFit(gcTable, control = control_new)
       )
-      
+
       # Show [Restore fit] button
       show("restore_dr_growth")
       show("restore_dr_growth2")
       show("restore_dr_growth3")
     }
-    
+
     removeModal()
   })
-  
+
   restore_dr_growth_buttons <- reactive({
     list(input$restore_dr_growth, input$restore_dr_growth2, input$restore_dr_growth3)
   })
-  
+
   # Restore previous linear fit upon click on [Restore Fit]
   observeEvent(restore_dr_growth_buttons(), {
     if(input$restore_dr_growth==0 && input$restore_dr_growth2==0 && input$restore_dr_growth3==0){
@@ -11156,11 +11159,11 @@ server <- function(input, output, session){
     hide("restore_dr_growth2")
     hide("restore_dr_growth3")
   })
-  
+
   output$dose_response_growth_plot_combined <- renderPlot({
     dose_response_growth_plot_combined()
   })
-  
+
   output$download_dose_response_growth_plot_combined <- downloadHandler(
     filename = function() {
       paste("dose_response_growth_combined",  input$format_download_dose_response_growth_plot_combined, sep="")
@@ -11179,18 +11182,18 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_dose_response_growth_plot_combined,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_dose_response_growth_plot_combined,
                height = input$height_download_dose_response_growth_plot_combined,
                dpi = input$dpi_download_dose_response_growth_plot_combined,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_dose_response_growth_plot_combined == ".pdf", "image/pdf", "image/png")
   )
-  
+
   ### DR Plots Model ####
   observe({
     if(length(results$growth$drFit) > 1 && length(results$growth$drFit$drTable) > 1 && results$growth$drFit$control$dr.method == "model"){
@@ -11199,44 +11202,44 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_Visualize_Growth", target = "tabPanel_Visualize_Growth_DoseResponse_Model")
     }
   })
-  
+
   output$more_than_one_drfit_model <- reactive({
     if(length(results$growth$drFit) > 1 && length(results$growth$drFit$drFittedModels) > 1) return(TRUE)
     else return(FALSE)
   })
   outputOptions(output, 'more_than_one_drfit_model', suspendWhenHidden=FALSE)
-  
+
   select_inputs_individual_plots_dose_response_growth_plot_model <- reactive({
     if (length(results$growth$drFit)>1) names(results$growth$drFit$drFittedModels)
     else return("")
   })
-  
+
   observe({
     updateSelectInput(inputId = "individual_plots_dose_response_growth_plot_model",
                       choices = select_inputs_individual_plots_dose_response_growth_plot_model())
   })
-  
+
   select_inputs_show_breaks_dose_response_growth_plot_model <- reactive({
     if(!input$log_transform_x_axis_dose_response_growth_plot_model)
       return(FALSE)
     else
       return(TRUE)
   })
-  
+
   observe({
     updateCheckboxInput(inputId = "show_break_dose_response_growth_plot_model",
                         value  = select_inputs_show_breaks_dose_response_growth_plot_model())
   })
-  
+
   dose_response_growth_plot_model <- reactive({
-    
+
     # Define log-transformation of axes
     if(input$log_transform_x_axis_dose_response_growth_plot_model){
       log <- "x"
     } else {
       log <- ""
     }
-    
+
     # Define x- and y-axis limits
     if(!any(input$y_range_min_dose_response_growth_plot_model == "",
             input$y_range_max_dose_response_growth_plot_model == "") &&
@@ -11245,7 +11248,7 @@ server <- function(input, output, session){
       y.lim <- c(as.numeric(input$y_range_min_dose_response_growth_plot_model),
                  as.numeric(input$y_range_max_dose_response_growth_plot_model))
     }
-    
+
     if(!any(input$x_range_min_dose_response_growth_plot_model == "",
             input$x_range_max_dose_response_growth_plot_model == "") &&
        !any(is.null(input$x_range_min_dose_response_growth_plot_model),
@@ -11282,11 +11285,11 @@ server <- function(input, output, session){
       )
     )
   })
-  
+
   output$dose_response_growth_plot_model <- renderPlot({
     dose_response_growth_plot_model()
   })
-  
+
   output$download_dose_response_growth_plot_model <- downloadHandler(
     filename = function() {
       paste("dose_response_growth_model",  input$format_download_dose_response_growth_plot_model, sep="")
@@ -11303,7 +11306,7 @@ server <- function(input, output, session){
                          width = input$width_download_dose_response_growth_plot_model,
                          height = input$height_download_dose_response_growth_plot_model)
         }
-        
+
       } else {
         grDevices::png(file = file,
                        width = input$width_download_dose_response_growth_plot_model,
@@ -11317,7 +11320,7 @@ server <- function(input, output, session){
       } else {
         log <- ""
       }
-      
+
       # Define x- and y-axis limits
       if(!any(input$y_range_min_dose_response_growth_plot_model == "",
               input$y_range_max_dose_response_growth_plot_model == "") &&
@@ -11326,7 +11329,7 @@ server <- function(input, output, session){
         y.lim <- c(as.numeric(input$y_range_min_dose_response_growth_plot_model),
                    as.numeric(input$y_range_max_dose_response_growth_plot_model))
       }
-      
+
       if(!any(input$x_range_min_dose_response_growth_plot_model == "",
               input$x_range_max_dose_response_growth_plot_model == "") &&
          !any(is.null(input$x_range_min_dose_response_growth_plot_model),
@@ -11335,7 +11338,7 @@ server <- function(input, output, session){
                    as.numeric(input$x_range_max_dose_response_growth_plot_model))
       }
       results <- results$growth$drFit$drFittedModels[[ifelse(input$individual_plots_dose_response_growth_plot_model == "1" || is.null(input$individual_plots_dose_response_growth_plot_model), 1, input$individual_plots_dose_response_growth_plot_model)]]
-      
+
       try(
         plot.drFitModel(results,
                         pch = input$shape_type_dose_response_growth_plot_model,
@@ -11359,13 +11362,13 @@ server <- function(input, output, session){
     },
     contentType = ifelse(input$format_download_dose_response_growth_plot_model == ".pdf", "image/pdf", "image/png")
   )
-  
+
   ### DR Plots Spline Individual ####
-  
-  
+
+
   dose_response_growth_plot_individual <- reactive({
     results <- results$growth$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_growth_plot == "1" || is.null(input$individual_plots_dose_response_growth_plot), 1, input$individual_plots_dose_response_growth_plot)]]
-    
+
     # Define log-transformation of axes
     if(input$log_transform_y_axis_dose_response_growth_plot &&
        input$log_transform_x_axis_dose_response_growth_plot){
@@ -11385,7 +11388,7 @@ server <- function(input, output, session){
       y.lim <- c(as.numeric(input$y_range_min_dose_response_growth_plot),
                  as.numeric(input$y_range_max_dose_response_growth_plot))
     }
-    
+
     if(any(input$x_range_min_dose_response_growth_plot == "",
            input$x_range_max_dose_response_growth_plot == "")){
       x.lim <- NULL
@@ -11393,7 +11396,7 @@ server <- function(input, output, session){
       x.lim <- c(as.numeric(input$x_range_min_dose_response_growth_plot),
                  as.numeric(input$x_range_max_dose_response_growth_plot))
     }
-    
+
     plot.drFitSpline(results,
                      combine = FALSE,
                      pch = input$shape_type_dose_response_growth_plot,
@@ -11409,11 +11412,11 @@ server <- function(input, output, session){
                      x.lim = x.lim
     )
   })
-  
+
   output$dose_response_growth_plot_individual <- renderPlot({
     dose_response_growth_plot_individual()
   })
-  
+
   output$download_dose_response_growth_plot_individual <- downloadHandler(
     filename = function() {
       paste("dose_response_growth_",  gsub(" \\| ", "_", input$individual_plots_dose_response_growth_plot), input$format_download_dose_response_growth_plot_individual, sep="")
@@ -11430,7 +11433,7 @@ server <- function(input, output, session){
                          width = input$width_download_dose_response_growth_plot_individual,
                          height = input$height_download_dose_response_growth_plot_individual)
         }
-        
+
       } else {
         grDevices::png(file = file,
                        width = input$width_download_dose_response_growth_plot_individual,
@@ -11439,7 +11442,7 @@ server <- function(input, output, session){
                        res = input$dpi_download_dose_response_growth_plot_individual)
       }
       results <- results$growth$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_growth_plot == "1" || is.null(input$individual_plots_dose_response_growth_plot), 1, input$individual_plots_dose_response_growth_plot)]]
-      
+
       # Define log-transformation of axes
       if(input$log_transform_y_axis_dose_response_growth_plot &&
          input$log_transform_x_axis_dose_response_growth_plot){
@@ -11451,7 +11454,7 @@ server <- function(input, output, session){
       } else {
         log <- ""
       }
-      
+
       # Define x- and y-axis limits
       if(any(input$y_range_min_dose_response_growth_plot == "",
              input$y_range_max_dose_response_growth_plot == "")){
@@ -11460,7 +11463,7 @@ server <- function(input, output, session){
         y.lim <- c(as.numeric(input$y_range_min_dose_response_growth_plot),
                    as.numeric(input$y_range_max_dose_response_growth_plot))
       }
-      
+
       if(any(input$x_range_min_dose_response_growth_plot == "",
              input$x_range_max_dose_response_growth_plot == "")){
         x.lim <- NULL
@@ -11468,7 +11471,7 @@ server <- function(input, output, session){
         x.lim <- c(as.numeric(input$x_range_min_dose_response_growth_plot),
                    as.numeric(input$x_range_max_dose_response_growth_plot))
       }
-      
+
       plot.drFitSpline(results,
                        combine = FALSE,
                        pch = input$shape_type_dose_response_growth_plot,
@@ -11487,7 +11490,7 @@ server <- function(input, output, session){
     },
     contentType = ifelse(input$format_download_dose_response_growth_plot_individual == ".pdf", "image/pdf", "image/png")
   )
-  
+
   # observeEvent(input$rerun_dr_spline_individual, {
   #
   #   select_options <- c()
@@ -11619,8 +11622,8 @@ server <- function(input, output, session){
   #   results$growth$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_growth_plot == "1" || is.null(input$individual_plots_dose_response_growth_plot), 1, input$individual_plots_dose_response_growth_plot)]] <- selected_vals_validate_growth$restore_dr_spline_individual
   #   hide("restore_dr_spline_individual")
   # })
-  
-  
+
+
   ### DR Plots (Bootstrap) ####
   observe({
     if(length(results$growth$drFit) > 1 && length(results$growth$drFit$drTable) > 1 && results$growth$control$nboot.dr > 1){
@@ -11629,10 +11632,10 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_Visualize_Growth", target = "tabPanel_Visualize_Growth_DoseResponse_Spline_bt")
     }
   })
-  
+
   dose_response_growth_plot_individual_bt <- reactive({
     results <- results$growth$drFit$drBootSplines[[ifelse(input$individual_plots_dose_response_growth_plot_bt == "1" || is.null(input$individual_plots_dose_response_growth_plot_bt), 1, input$individual_plots_dose_response_growth_plot_bt)]]
-    
+
     plot.drBootSpline(results,
                       pch = input$shape_type_dose_response_growth_plot_bt,
                       cex.point = input$shape_size_dose_response_growth_plot_bt,
@@ -11640,14 +11643,14 @@ server <- function(input, output, session){
                       cex.axis = input$lab_size_dose_response_growth_plot_bt,
                       lwd = input$line_width_dose_response_growth_plot_bt,
                       combine = TRUE
-                      
+
     )
   })
-  
+
   output$dose_response_growth_plot_individual_bt <- renderPlot({
     dose_response_growth_plot_individual_bt()
   })
-  
+
   output$download_dose_response_growth_plot_individual_bt <- downloadHandler(
     filename = function() {
       paste("dose_response_boot_growth_",  gsub(" \\| ", "_", input$individual_plots_dose_response_growth_plot_bt), input$format_download_dose_response_growth_plot_individual_bt, sep="")
@@ -11664,7 +11667,7 @@ server <- function(input, output, session){
                          width = input$width_download_dose_response_growth_plot_individual_bt,
                          height = input$height_download_dose_response_growth_plot_individual_bt)
         }
-        
+
       } else {
         grDevices::png(file = file,
                        width = input$width_download_dose_response_growth_plot_individual_bt,
@@ -11673,7 +11676,7 @@ server <- function(input, output, session){
                        res = input$dpi_download_dose_response_growth_plot_individual_bt)
       }
       results <- results$growth$drFit$drBootSplines[[input$individual_plots_dose_response_growth_plot_bt]]
-      
+
       plot.drBootSpline(results,
                         pch = input$shape_type_dose_response_growth_plot_bt,
                         cex.point = input$shape_size_dose_response_growth_plot_bt,
@@ -11681,29 +11684,29 @@ server <- function(input, output, session){
                         cex.axis = input$lab_size_dose_response_growth_plot_bt,
                         lwd = input$line_width_dose_response_growth_plot_bt,
                         combine = TRUE
-                        
+
       )
       dev.off()
     },
     contentType = ifelse(input$format_download_dose_response_growth_plot_individual_bt == ".pdf", "image/pdf", "image/png")
   )
-  
+
   ### Parameter Plots ####
   selected_inputs_visualize_parameter_growth_plot <- reactive({
     results <- results$growth
     if(is.null(results)) return("")
-    
+
     select_samples <- results$expdesign$condition
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "samples_visualize_parameter_growth_plot",
                       choices = selected_inputs_visualize_parameter_growth_plot()
     )
   })
-  
+
   growth_parameter_plot <- reactive({
     results <- results$growth
     if (input$normalize_to_reference_growth_parameter_plot){
@@ -11756,16 +11759,16 @@ server <- function(input, output, session){
                        legend.ncol = input$legend_ncol_growth_parameter_plot,
                        order_by_conc = input$sort_by_conc_growth_parameter_plot,
                        colors = cols
-                       
+
         )
       )
     }
   })
-  
+
   output$growth_parameter_plot <- renderPlot({
     growth_parameter_plot()
   })
-  
+
   output$download_growth_parameter_plot <- downloadHandler(
     filename = function() {
       paste("growth_parameter_plot",  input$format_download_growth_parameter_plot, sep="")
@@ -11784,19 +11787,19 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_growth_parameter_plot,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_growth_parameter_plot,
                height = input$height_download_growth_parameter_plot,
                dpi = input$dpi_download_growth_parameter_plot,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_growth_parameter_plot == ".pdf", "image/pdf", "image/png")
-    
+
   )
-  
+
   selected_inputs_parameter_growth_parameter_plot <- reactive({
     results <- results$growth
     gc_parameters <- c()
@@ -11849,48 +11852,48 @@ server <- function(input, output, session){
     }
     gc_parameters
   })
-  
+
   selected_inputs_reference_condition_growth_parameter_plot <- reactive({
     results <- results$growth
     results$expdesign$condition
   })
-  
+
   select_inputs_reference_concentration_growth_parameter_plot <- reactive({
     results <- results$growth
     results$expdesign$concentration
   })
-  
+
   select_inputs_individual_plots_dose_response_growth_plot <- reactive({
     if (length(results$growth$drFit)>1) names(results$growth$drFit$drFittedSplines)
     else return("")
   })
-  
-  
+
+
   observe({
     updateSelectInput(inputId = "parameter_parameter_growth_plot",
                       choices = selected_inputs_parameter_growth_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "reference_condition_growth_parameter_plot",
                       choices = selected_inputs_reference_condition_growth_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "reference_concentration_growth_parameter_plot",
                       choices = select_inputs_reference_concentration_growth_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "individual_plots_dose_response_growth_plot",
                       choices = select_inputs_individual_plots_dose_response_growth_plot())
   })
-  
+
   observe({
     updateSelectInput(inputId = "individual_plots_dose_response_growth_plot_bt",
                       choices = select_inputs_individual_plots_dose_response_growth_plot_bt())
   })
-  
+
   ### Grid Plot ####
   observe({
     if(!exists("output$more_than_two_conc") || is.null(output$more_than_two_conc))
@@ -11901,14 +11904,14 @@ server <- function(input, output, session){
                         selected = FALSE)
     }
   })
-  
+
   observe({
     if(input$select_string_visualize_growth_grid)
       updateSelectInput(session = session,
                         inputId = "order_matters_visualize_growth_grid",
                         selected = FALSE)
   })
-  
+
   selected_inputs_parameter_growth_grid_plot <- reactive({
     results <- results$growth
     gc_parameters <- c()
@@ -11961,12 +11964,12 @@ server <- function(input, output, session){
     }
     gc_parameters
   })
-  
+
   observe({
     updateSelectInput(inputId = "parameter_parameter_grid_plot",
                       choices = selected_inputs_parameter_growth_grid_plot()
     )})
-  
+
   selected_inputs_visualize_growth_grid <- reactive({
     results <- results$growth
     if(is.null(results)) return("")
@@ -11977,21 +11980,21 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "samples_visualize_growth_grid",
                       choices = selected_inputs_visualize_growth_grid()
     )
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "groups_visualize_growth_grid",
                       choices = selected_inputs_visualize_growth_grid()
     )
   })
-  
+
   growth_grid_plot <- reactive({
     results <- results$growth
     if(input$select_string_visualize_growth_grid){
@@ -12055,12 +12058,12 @@ server <- function(input, output, session){
       )
     }
   })
-  
+
   output$growth_grid_plot <- renderPlot({
     growth_grid_plot()
   })
-  
-  
+
+
   output$download_growth_grid_plot <- downloadHandler(
     filename = function() {
       paste("growth_grid_plot",  input$format_download_growth_grid_plot, sep="")
@@ -12079,18 +12082,18 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_growth_grid_plot,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_growth_grid_plot,
                height = input$height_download_growth_grid_plot,
                dpi = input$dpi_download_growth_grid_plot,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_growth_grid_plot == ".pdf", "image/pdf", "image/png")
   )
-  
+
   ### DR Parameter Plots ####
   observe({
     if(length(results$growth$drFit) > 1 && length(results$growth$drFit$drTable) > 1){
@@ -12099,10 +12102,10 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_Visualize_Growth", target = "tabPanel_Visualize_Growth_DoseResponseParameters")
     }
   })
-  
+
   growth_dr_parameter_plot <- reactive({
     results <- results$growth
-    
+
     if (input$normalize_to_reference_growth_dr_parameter_plot){
       reference.nm <- input$reference_condition_growth_dr_parameter_plot
     } else {
@@ -12120,11 +12123,11 @@ server <- function(input, output, session){
       )
     )
   })
-  
+
   output$growth_dr_parameter_plot <- renderPlot({
     growth_dr_parameter_plot()
   })
-  
+
   output$download_growth_dr_parameter_plot <- downloadHandler(
     filename = function() {
       paste("growth_dr_parameter_plot",  input$format_download_growth_dr_parameter_plot, sep="")
@@ -12143,19 +12146,19 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_growth_dr_parameter_plot,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_growth_dr_parameter_plot,
                height = input$height_download_growth_dr_parameter_plot,
                dpi = input$dpi_download_growth_dr_parameter_plot,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_growth_dr_parameter_plot == ".pdf", "image/pdf", "image/png")
-    
+
   )
-  
+
   selected_inputs_parameter_growth_dr_parameter_plot <- reactive({
     results <- results$growth
     if(!is.null(results)){
@@ -12176,29 +12179,29 @@ server <- function(input, output, session){
       dr_parameters
     }
   })
-  
+
   selected_inputs_reference_condition_growth_dr_parameter_plot <- reactive({
     results <- results$growth
     results$expdesign$condition
   })
-  
+
   select_inputs_individual_plots_dose_response_growth_plot_bt <- reactive({
     if (length(results$growth$drFit)>1 && results$growth$control$nboot.dr > 1) names(results$growth$drFit$drBootSplines)
     else return("")
   })
-  
+
   observe({
     updateSelectInput(inputId = "parameter_dr_parameter_growth_plot",
                       choices = selected_inputs_parameter_growth_dr_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "reference_condition_growth_dr_parameter_plot",
                       choices = selected_inputs_reference_condition_growth_dr_parameter_plot()
     )})
-  
-  
-  
+
+
+
   ## Fluorescence Plots: #####
   ### Group Plots ####
   selected_inputs_visualize_fluorescence_group <- reactive({
@@ -12211,21 +12214,21 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "samples_visualize_fluorescence_group",
                       choices = selected_inputs_visualize_fluorescence_group()
     )
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "groups_visualize_fluorescence_group",
                       choices = selected_inputs_visualize_fluorescence_group()
     )
   })
-  
+
   observe({
     if (length(results$fluorescence$flFit)>1){
       if(input$data_type_fluorescence_group_plot == "raw") y_axis <- "Fluorescence"
@@ -12247,7 +12250,7 @@ server <- function(input, output, session){
                       selected = y_axis
     )
   })
-  
+
   observe({
     if (length(results$fluorescence$flFit)>1){
       if(input$data_type_fluorescence_group_plot == "norm.fl"  || input$data_type_fluorescence_group_plot == "raw" ){ # || data.type == "raw2" || data.type == "norm.fl2"
@@ -12265,7 +12268,7 @@ server <- function(input, output, session){
                       selected = x_axis
     )
   })
-  
+
   observe({
     if (length(results$fluorescence$flFit)>1){
       if(input$data_type_fluorescence_group_plot == "spline" && results$fluorescence$control$x_type == "growth"){
@@ -12275,8 +12278,8 @@ server <- function(input, output, session){
       }
     }
   })
-  
-  
+
+
   selected_inputs_fluorescence_group_plot_data_type <- reactive({
     results <- results$fluorescence
     selection <- c()
@@ -12303,9 +12306,9 @@ server <- function(input, output, session){
     # }
     selection
   })
-  
+
   output$fluorescence_group_plot <- renderPlot({
-    
+
     results <- results$fluorescence
     if(is.null(input$custom_colors_fluorescence_group_plot) || is.na(input$custom_colors_fluorescence_group_plot) || input$custom_colors_fluorescence_group_plot == ""){
       cols <- NULL
@@ -12381,7 +12384,7 @@ server <- function(input, output, session){
       )
     }
   })
-  
+
   observe({
     if(input$plot_derivative_fluorescence_group_plot && (input$data_type_fluorescence_group_plot == 'spline' )) h <- 9
     else h <- 6
@@ -12389,7 +12392,7 @@ server <- function(input, output, session){
                       selected = h
     )
   })
-  
+
   output$download_fluorescence_group_plot <- downloadHandler(
     filename = function() {
       paste("fluorescence_group_plot",  input$format_download_fluorescence_group_plot, sep="")
@@ -12408,23 +12411,23 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_fluorescence_group_plot,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_fluorescence_group_plot,
                height = input$height_download_fluorescence_group_plot,
                dpi = input$dpi_download_fluorescence_group_plot,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_fluorescence_group_plot == ".pdf", "image/pdf", "image/png")
   )
-  
+
   observe({
     updateSelectInput(inputId = "data_type_fluorescence_group_plot",
                       choices = selected_inputs_fluorescence_group_plot_data_type())
   })
-  
+
   ### DR Plots Spline ####
   # Hide Spline dose-response plot if dr.method != "spline"
   observe({
@@ -12435,9 +12438,9 @@ server <- function(input, output, session){
     } else {
       hideTab(inputId = "tabsetPanel_Visualize_Fluorescence", target = "tabPanel_Visualize_Fluorescence_DoseResponse_spline")
     }
-    
+
   })
-  
+
   output$dose_response_plot_fluorescence_combined <- renderPlot({
     results <- results$fluorescence$drFit
     plot.drFit(results,
@@ -12457,11 +12460,11 @@ server <- function(input, output, session){
                log.x = input$log_transform_x_axis_dose_response_fluorescence_plot
     )
   })
-  
+
   rerun_dr_fluorescence_buttons <- reactive({
     list(input$rerun_dr_fluorescence, input$rerun_dr_fluorescence2, input$rerun_dr_fluorescence3)
   })
-  
+
   observeEvent(rerun_dr_fluorescence_buttons(), {
     if(input$rerun_dr_fluorescence==0 && input$rerun_dr_fluorescence2==0 && input$rerun_dr_fluorescence3==0){
       return()
@@ -12471,12 +12474,12 @@ server <- function(input, output, session){
                                                                                'A.linfit')
     if(any("s" %in% results$fluorescence$control$fit.opt)) select_options <- c(select_options, 'max_slope.spline', 'lambda.spline',
                                                                                'A.spline', 'dY.spline', 'integral.spline')
-    
+
     # display a modal dialog with a header, textinput and action buttons
     showModal(
       modalDialog(
         tags$h2('Please enter adjusted parameters'),
-        
+
         selectInput(inputId = "dr_method_fluorescence_rerun",
                     label = "Method",
                     choices = c("Biosensor response model" = "model",
@@ -12499,10 +12502,10 @@ server <- function(input, output, session){
                                label = 'Log transform response')
         ),
         bsPopover(id = "response_parameter_fluorescence_rerun", title = HTML("<em>dr.parameter</em>"), content = "Choose the response parameter to be used for creating a dose response curve.", placement = "top"),
-        
+
         conditionalPanel(
           condition = 'input.dr_method_fluorescence_rerun == "spline"',
-          
+
           textInput(
             inputId = 'smoothing_factor_fluorescence_dr_rerun',
             label = 'Smoothing factor dose-response splines',
@@ -12510,7 +12513,7 @@ server <- function(input, output, session){
             placeholder = "NULL (choose automatically)"
           ),
           bsPopover(id = "smoothing_factor_fluorescence_dr_rerun", title = HTML("<em>smooth.dr</em>"), content = "\\'spar\\' argument in the R function smooth.spline() used to create the dose response curve."),
-          
+
           QurvE:::numberInput(
             inputId = 'number_of_bootstrappings_dr_fluorescence_rerun',
             label = 'Number of bootstrappings',
@@ -12530,28 +12533,28 @@ server <- function(input, output, session){
                    div(
                      modalButton('cancel'),
                      style="float:right")
-                   
+
             )
           )
         )
       )
     )
   })
-  
+
   # Re-run selected linear fit with user-defined parameters upon click on 'submit'
   observeEvent(input$submit.rerun.dr.fluorescence, {
     if(!is.null(results$fluorescence$drFit)){
-      
+
       showModal(modalDialog("Performing dose-reponse analysis...", footer = NULL))
-      
+
       # store previous fit in memory
       selected_vals_validate_fluorescence$restore_dr_fluorescence <- results$fluorescence$drFit
-      
+
       # Re-run fit and store in results object
       flTable <- results$fluorescence$flFit$flTable
       control <- results$fluorescence$drFit$control
       control_new <- results$fluorescence$control <- control
-      
+
       control_new$dr.method <- input$dr_method_fluorescence_rerun
       control_new$dr.parameter <- input$response_parameter_fluorescence_rerun
       control_new$smooth.dr <- input$smoothing_factor_fluorescence_dr_rerun
@@ -12560,7 +12563,7 @@ server <- function(input, output, session){
       control_new$nboot.dr <- input$number_of_bootstrappings_dr_fluorescence_rerun
       control_new$log.x.dr <- input$log_transform_concentration_fluorescence_rerun
       control_new$log.y.dr <- input$log_transform_response_fluorescence_rerun
-      
+
       if(control_new$dr.method == "spline"){
         try(
           results$fluorescence$drFit <-
@@ -12572,20 +12575,20 @@ server <- function(input, output, session){
             fl.drFit(flTable, control = control_new)
         )
       }
-      
+
       # Show [Restore fit] button
       show("restore_dr_fluorescence")
       show("restore_dr_fluorescence2")
       show("restore_dr_fluorescence3")
     }
-    
+
     removeModal()
   })
-  
+
   restore_dr_fluorescence_buttons <- reactive({
     list(input$restore_dr_fluorescence, input$restore_dr_fluorescence2, input$restore_dr_fluorescence3)
   })
-  
+
   # Restore previous linear fit upon click on [Restore Fit]
   observeEvent(restore_dr_fluorescence_buttons(), {
     if(input$restore_dr_fluorescence==0 && input$restore_dr_fluorescence2==0 && input$restore_dr_fluorescence3==0){
@@ -12597,7 +12600,7 @@ server <- function(input, output, session){
     hide("restore_dr_fluorescence2")
     hide("restore_dr_fluorescence3")
   })
-  
+
   output$download_dose_response_plot_fluorescence_combined <- downloadHandler(
     filename = function() {
       paste("dose_response_fluorescence_combined",  input$format_download_dose_response_plot_fluorescence_combined, sep="")
@@ -12616,24 +12619,24 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_dose_response_plot_fluorescence_combined,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_dose_response_plot_fluorescence_combined,
                height = input$height_download_dose_response_plot_fluorescence_combined,
                dpi = input$dpi_download_dose_response_plot_fluorescence_combined,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_dose_response_plot_fluorescence_combined == ".pdf", "image/pdf", "image/png")
   )
-  
+
   ### DR Plots Spline Individual ####
-  
-  
+
+
   output$dose_response_fluorescence_plot_individual <- renderPlot({
     results <- results$fluorescence$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_fluorescence_plot == "1" || is.null(input$individual_plots_dose_response_fluorescence_plot), 1, input$individual_plots_dose_response_fluorescence_plot)]]
-    
+
     # Define log-transformation of axes
     if(input$log_transform_y_axis_dose_response_fluorescence_plot &&
        input$log_transform_x_axis_dose_response_fluorescence_plot){
@@ -12645,7 +12648,7 @@ server <- function(input, output, session){
     } else {
       log <- ""
     }
-    
+
     # Define x- and y-axis limits
     if(any(input$y_range_min_dose_response_fluorescence_plot == "",
            input$y_range_max_dose_response_fluorescence_plot == "")){
@@ -12654,7 +12657,7 @@ server <- function(input, output, session){
       y.lim <- c(as.numeric(input$y_range_min_dose_response_fluorescence_plot),
                  as.numeric(input$y_range_max_dose_response_fluorescence_plot))
     }
-    
+
     if(any(input$x_range_min_dose_response_fluorescence_plot == "",
            input$x_range_max_dose_response_fluorescence_plot == "")){
       x.lim <- NULL
@@ -12676,7 +12679,7 @@ server <- function(input, output, session){
                      y.lim = y.lim,
                      x.lim = x.lim)
   })
-  
+
   output$download_dose_response_fluorescence_plot_individual <- downloadHandler(
     filename = function() {
       paste("dose_response_fluorescence_",  gsub(" \\| ", "_", input$individual_plots_dose_response_fluorescence_plot), input$format_download_dose_response_fluorescence_plot_individual, sep="")
@@ -12693,7 +12696,7 @@ server <- function(input, output, session){
                          width = input$width_download_dose_response_fluorescence_plot_individual,
                          height = input$height_download_dose_response_fluorescence_plot_individual)
         }
-        
+
       } else {
         grDevices::png(file = file,
                        width = input$width_download_dose_response_fluorescence_plot_individual,
@@ -12702,7 +12705,7 @@ server <- function(input, output, session){
                        res = input$dpi_download_dose_response_fluorescence_plot_individual)
       }
       results <- results$fluorescence$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_fluorescence_plot == "1" || is.null(input$individual_plots_dose_response_fluorescence_plot), 1, input$individual_plots_dose_response_fluorescence_plot)]]
-      
+
       # Define log-transformation of axes
       if(input$log_transform_y_axis_dose_response_fluorescence_plot &&
          input$log_transform_x_axis_dose_response_fluorescence_plot){
@@ -12714,7 +12717,7 @@ server <- function(input, output, session){
       } else {
         log <- ""
       }
-      
+
       # Define x- and y-axis limits
       if(any(input$y_range_min_dose_response_fluorescence_plot == "",
              input$y_range_max_dose_response_fluorescence_plot == "")){
@@ -12723,7 +12726,7 @@ server <- function(input, output, session){
         y.lim <- c(as.numeric(input$y_range_min_dose_response_fluorescence_plot),
                    as.numeric(input$y_range_max_dose_response_fluorescence_plot))
       }
-      
+
       if(any(input$x_range_min_dose_response_fluorescence_plot == "",
              input$x_range_max_dose_response_fluorescence_plot == "")){
         x.lim <- NULL
@@ -12748,19 +12751,19 @@ server <- function(input, output, session){
     },
     contentType = ifelse(input$format_download_dose_response_fluorescence_plot_individual == ".pdf", "image/pdf", "image/png")
   )
-  
+
   select_inputs_individual_plots_dose_response_fluorescence_plot<- reactive({
     if (length(results$fluorescence$drFit)>1) names(results$fluorescence$drFit$drFittedSplines)
     else return("")
   })
-  
+
   observe({
     updateSelectInput(inputId = "individual_plots_dose_response_fluorescence_plot",
                       choices = select_inputs_individual_plots_dose_response_fluorescence_plot())
   })
-  
+
   ### DR Plots Model individual ####
-  
+
   # Hide Model dose-response plot if dr.method != "model"
   observe({
     if(length(results$fluorescence$drFit) > 1 &&
@@ -12770,9 +12773,9 @@ server <- function(input, output, session){
     } else {
       hideTab(inputId = "tabsetPanel_Visualize_Fluorescence", target = "tabPanel_Visualize_Fluorescence_DoseResponse_model")
     }
-    
+
   })
-  
+
   output$dose_response_model_fluorescence_plot_individual <- renderPlot({
     results <- results$fluorescence$drFit$drFittedModels[[ifelse(input$individual_plots_dose_response_model_fluorescence_plot == "1" || is.null(input$individual_plots_dose_response_model_fluorescence_plot), 1, input$individual_plots_dose_response_model_fluorescence_plot)]]
     # Define log-transformation of axes
@@ -12786,7 +12789,7 @@ server <- function(input, output, session){
     } else {
       log <- ""
     }
-    
+
     # Define x- and y-axis limits
     if(any(input$y_range_min_dose_response_model_fluorescence_plot == "",
            input$y_range_max_dose_response_model_fluorescence_plot == "")){
@@ -12795,7 +12798,7 @@ server <- function(input, output, session){
       y.lim <- c(as.numeric(input$y_range_min_dose_response_model_fluorescence_plot),
                  as.numeric(input$y_range_max_dose_response_model_fluorescence_plot))
     }
-    
+
     if(any(input$x_range_min_dose_response_model_fluorescence_plot == "",
            input$x_range_max_dose_response_model_fluorescence_plot == "")){
       x.lim <- NULL
@@ -12803,7 +12806,7 @@ server <- function(input, output, session){
       x.lim <- c(as.numeric(input$x_range_min_dose_response_model_fluorescence_plot),
                  as.numeric(input$x_range_max_dose_response_model_fluorescence_plot))
     }
-    
+
     plot.drFitFLModel(results,
                       pch = input$shape_type_dose_response_model_fluorescence_plot,
                       cex.point = input$shape_size_dose_response_model_fluorescence_plot,
@@ -12816,7 +12819,7 @@ server <- function(input, output, session){
                       x.lim = x.lim
     )
   })
-  
+
   output$download_dose_response_model_fluorescence_plot_individual <- downloadHandler(
     filename = function() {
       paste("biosensor_model_fluorescence_",  gsub(" \\| ", "_", input$individual_plots_dose_response_model_fluorescence_plot), input$format_download_dose_response_model_fluorescence_plot_individual, sep="")
@@ -12835,18 +12838,18 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_dose_response_model_fluorescence_plot_individual,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_dose_response_model_fluorescence_plot_individual,
                height = input$height_download_dose_response_model_fluorescence_plot_individual,
                dpi = input$dpi_download_dose_response_model_fluorescence_plot_individual,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_dose_response_model_fluorescence_plot_individual == ".pdf", "image/pdf", "image/png")
   )
-  
+
   select_inputs_individual_plots_dose_response_model_fluorescence_plot<- reactive({
     if (length(results$fluorescence$drFit)>1) names(results$fluorescence$drFit$drFittedModels)
     else return("")
@@ -12855,27 +12858,27 @@ server <- function(input, output, session){
     updateSelectInput(inputId = "individual_plots_dose_response_model_fluorescence_plot",
                       choices = select_inputs_individual_plots_dose_response_model_fluorescence_plot())
   })
-  
-  
+
+
   ### Parameter Plots ####
   selected_inputs_visualize_parameter_fluorescence_plot <- reactive({
     results <- results$fluorescence
     if(is.null(results)) return("")
-    
+
     select_samples <- results$expdesign$condition
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "samples_visualize_parameter_fluorescence_plot",
                       choices = selected_inputs_visualize_parameter_fluorescence_plot()
     )
   })
-  
+
   fluorescence_parameter_plot <- reactive({
     results <- results$fluorescence
-    
+
     if (input$normalize_to_reference_fluorescence_parameter_plot){
       reference.conc <- as.numeric(input$reference_concentration_fluorescence_parameter_plot)
       reference.nm <- input$reference_condition_fluorescence_parameter_plot
@@ -12930,11 +12933,11 @@ server <- function(input, output, session){
       )
     }
   })
-  
+
   output$fluorescence_parameter_plot <- renderPlot({
     fluorescence_parameter_plot()
   })
-  
+
   output$download_fluorescence_parameter_plot <- downloadHandler(
     filename = function() {
       paste("fluorescence_parameter_plot",  input$format_download_fluorescence_parameter_plot, sep="")
@@ -12953,19 +12956,19 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_fluorescence_parameter_plot,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_fluorescence_parameter_plot,
                height = input$height_download_fluorescence_parameter_plot,
                dpi = input$dpi_download_fluorescence_parameter_plot,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_fluorescence_parameter_plot == ".pdf", "image/pdf", "image/png")
-    
+
   )
-  
+
   selected_inputs_parameter_fluorescence_parameter_plot <- reactive({
     results <- results$fluorescence
     gc_parameters <- c()
@@ -13001,57 +13004,57 @@ server <- function(input, output, session){
     }
     gc_parameters
   })
-  
+
   selected_inputs_reference_condition_fluorescence_parameter_plot <- reactive({
     results <- results$fluorescence
     results$expdesign$condition
   })
-  
+
   select_inputs_reference_concentration_fluorescence_parameter_plot <- reactive({
     results <- results$fluorescence
     results$expdesign$concentration
   })
-  
+
   observe({
     updateSelectInput(inputId = "parameter_fluorescence_parameter_fluorescence_plot",
                       choices = selected_inputs_parameter_fluorescence_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "reference_condition_fluorescence_parameter_plot",
                       choices = selected_inputs_reference_condition_fluorescence_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "reference_concentration_fluorescence_parameter_plot",
                       choices = select_inputs_reference_concentration_fluorescence_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "individual_plots_dose_response_fluorescence_plot",
                       choices = select_inputs_individual_plots_dose_response_fluorescence_plot())
   })
-  
+
   selected_inputs_reference_condition_fluorescence_parameter_plot <- reactive({
     results <- results$fluorescence
     results$expdesign$condition
   })
-  
+
   select_inputs_reference_concentration_fluorescence_parameter_plot <- reactive({
     results <- results$fluorescence
     results$expdesign$concentration
   })
-  
+
   observe({
     updateSelectInput(inputId = "reference_condition_fluorescence_parameter_plot",
                       choices = selected_inputs_reference_condition_fluorescence_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "reference_concentration_fluorescence_parameter_plot",
                       choices = select_inputs_reference_concentration_fluorescence_parameter_plot()
     )})
-  
+
   ### Grid Plot ####
   observe({
     if(!exists("output$more_than_two_conc") || is.null(output$more_than_two_conc))
@@ -13062,14 +13065,14 @@ server <- function(input, output, session){
                         selected = FALSE)
     }
   })
-  
+
   observe({
     if(input$select_string_visualize_fluorescence_grid)
       updateSelectInput(session = session,
                         inputId = "order_matters_visualize_fluorescence_grid",
                         selected = FALSE)
   })
-  
+
   selected_inputs_fluorescence_grid_plot_data_type <- reactive({
     results <- results$fluorescence
     selection <- c()
@@ -13084,12 +13087,12 @@ server <- function(input, output, session){
     }
     selection
   })
-  
+
   observe({
     updateSelectInput(inputId = "data_type_fluorescence_grid_plot",
                       choices = selected_inputs_fluorescence_grid_plot_data_type())
   })
-  
+
   selected_inputs_parameter_fluorescence_grid_plot <- reactive({
     results <- results$fluorescence
     gc_parameters <- c()
@@ -13125,12 +13128,12 @@ server <- function(input, output, session){
     }
     gc_parameters
   })
-  
+
   observe({
     updateSelectInput(inputId = "parameter_parameter_grid_plot_fluorescence",
                       choices = selected_inputs_parameter_fluorescence_grid_plot()
     )})
-  
+
   selected_inputs_visualize_fluorescence_grid <- reactive({
     results <- results$fluorescence
     if(is.null(results)) return("")
@@ -13141,35 +13144,35 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "samples_visualize_fluorescence_grid",
                       choices = selected_inputs_visualize_fluorescence_grid()
     )
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "groups_visualize_fluorescence_grid",
                       choices = selected_inputs_visualize_fluorescence_grid()
     )
   })
-  
+
   fluorescence_grid_plot <- reactive({
-    
+
     results <- results$fluorescence
-    
+
     if(input$y_axis_title_fluorescence_grid_plot == "")
       y_axis_title <- NULL
     else
       y_axis_title <- input$y_axis_title_fluorescence_grid_plot
-    
+
     if(input$x_axis_title_fluorescence_grid_plot == "")
       x_axis_title <- NULL
     else
       x_axis_title <- input$x_axis_title_fluorescence_grid_plot
-    
+
     if(input$select_string_visualize_fluorescence_grid){
       suppressWarnings(
         plot.grid(results,
@@ -13231,12 +13234,12 @@ server <- function(input, output, session){
       )
     }
   })
-  
+
   output$fluorescence_grid_plot <- renderPlot({
     fluorescence_grid_plot()
   })
-  
-  
+
+
   output$download_fluorescence_grid_plot <- downloadHandler(
     filename = function() {
       paste("fluorescence_grid_plot",  input$format_download_fluorescence_grid_plot, sep="")
@@ -13255,18 +13258,18 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_fluorescence_grid_plot,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_fluorescence_grid_plot,
                height = input$height_download_fluorescence_grid_plot,
                dpi = input$dpi_download_fluorescence_grid_plot,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_fluorescence_grid_plot == ".pdf", "image/pdf", "image/png")
   )
-  
+
   ### DR Plots (Bootstrap) ####
   observe({
     if(length(results$fluorescence$drFit) > 1 && length(results$fluorescence$drFit$drTable) > 1 && results$fluorescence$control$nboot.dr > 1){
@@ -13275,10 +13278,10 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_Visualize_Fluorescence", target = "tabPanel_Visualize_Fluorescence_DoseResponse_bt")
     }
   })
-  
+
   dose_response_fluorescence_plot_individual_bt <- reactive({
     results <- results$fluorescence$drFit$drBootSplines[[ifelse(input$individual_plots_dose_response_fluorescence_plot_bt == "1" || is.null(input$individual_plots_dose_response_fluorescence_plot_bt), 1, input$individual_plots_dose_response_fluorescence_plot_bt)]]
-    
+
     plot.drBootSpline(results,
                       pch = input$shape_type_dose_response_fluorescence_plot_bt,
                       cex.point = input$shape_size_dose_response_fluorescence_plot_bt,
@@ -13286,14 +13289,14 @@ server <- function(input, output, session){
                       cex.axis = input$lab_size_dose_response_fluorescence_plot_bt,
                       lwd = input$line_width_dose_response_fluorescence_plot_bt,
                       combine = TRUE
-                      
+
     )
   })
-  
+
   output$dose_response_fluorescence_plot_individual_bt <- renderPlot({
     dose_response_fluorescence_plot_individual_bt()
   })
-  
+
   output$download_dose_response_fluorescence_plot_individual_bt <- downloadHandler(
     filename = function() {
       paste("dose_response_boot_fluorescence_",  gsub(" \\| ", "_", input$individual_plots_dose_response_fluorescence_plot_bt), input$format_download_dose_response_fluorescence_plot_individual_bt, sep="")
@@ -13310,7 +13313,7 @@ server <- function(input, output, session){
                          width = input$width_download_dose_response_fluorescence_plot_individual_bt,
                          height = input$height_download_dose_response_fluorescence_plot_individual_bt)
         }
-        
+
       } else {
         grDevices::png(file = file,
                        width = input$width_download_dose_response_fluorescence_plot_individual_bt,
@@ -13319,7 +13322,7 @@ server <- function(input, output, session){
                        res = input$dpi_download_dose_response_fluorescence_plot_individual_bt)
       }
       results <- results$fluorescence$drFit$drBootSplines[[input$individual_plots_dose_response_fluorescence_plot_bt]]
-      
+
       plot.drBootSpline(results,
                         pch = input$shape_type_dose_response_fluorescence_plot_bt,
                         cex.point = input$shape_size_dose_response_fluorescence_plot_bt,
@@ -13327,14 +13330,14 @@ server <- function(input, output, session){
                         cex.axis = input$lab_size_dose_response_fluorescence_plot_bt,
                         lwd = input$line_width_dose_response_fluorescence_plot_bt,
                         combine = TRUE
-                        
+
       )
       dev.off()
     },
     contentType = ifelse(input$format_download_dose_response_fluorescence_plot_individual_bt == ".pdf", "image/pdf", "image/png")
   )
-  
-  
+
+
   ### Dual Plot ####
   selected_inputs_visualize_dual_plot <- reactive({
     results <- results$fluorescence
@@ -13346,14 +13349,14 @@ server <- function(input, output, session){
     }
     select_samples
   })
-  
+
   observe({
     updateSelectInput(session,
                       inputId = "samples_visualize_dual_plot",
                       choices = selected_inputs_visualize_dual_plot()
     )
   })
-  
+
   observe({
     if(length(results$fluorescence$data$growth) > 1 && length(results$fluorescence$data$fluorescence) > 1){
       showTab(inputId = "tabsetPanel_Visualize_Fluorescence", target = "tabPabel_Visualize_Dual")
@@ -13361,7 +13364,7 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_Visualize_Fluorescence", target = "tabPabel_Visualize_Dual")
     }
   })
-  
+
   dual_plot <- reactive({
     results <- results$fluorescence
     if(is.null(input$custom_colors_dual_plot) || is.na(input$custom_colors_dual_plot) || input$custom_colors_dual_plot == ""){
@@ -13427,11 +13430,11 @@ server <- function(input, output, session){
       )
     }
   })
-  
+
   output$dual_plot <- renderPlot({
     dual_plot()
   })
-  
+
   output$download_dual_plot <- downloadHandler(
     filename = function() {
       paste("fluorescence_group_plot",  input$format_download_dual_plot, sep="")
@@ -13450,18 +13453,18 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_dual_plot,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_dual_plot,
                height = input$height_download_dual_plot,
                dpi = input$dpi_download_dual_plot,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_dual_plot == ".pdf", "image/pdf", "image/png")
   )
-  
+
   selected_inputs_fluorescence_type_dual_plot <- reactive({
     results <- results$fluorescence
     selection <- c()
@@ -13479,12 +13482,12 @@ server <- function(input, output, session){
     # }
     selection
   })
-  
+
   observe({
     updateSelectInput(inputId = "fluorescence_type_dual_plot",
                       choices = selected_inputs_fluorescence_type_dual_plot())
   })
-  
+
   ### DR Parameter Plots ####
   observe({
     if(length(results$fluorescence$drFit) > 1 && length(results$fluorescence$drFit$drTable) > 1){
@@ -13493,10 +13496,10 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_Visualize_Fluorescence", target = "tabPanel_Visualize_Fluorescence_DoseResponseParameters")
     }
   })
-  
+
   fluorescence_dr_parameter_plot <- reactive({
     results <- results$fluorescence
-    
+
     if (input$normalize_to_reference_fluorescence_dr_parameter_plot){
       reference.nm <- input$reference_condition_fluorescence_dr_parameter_plot
     } else {
@@ -13511,11 +13514,11 @@ server <- function(input, output, session){
                       label.size = input$label.size_fluorescence_dr_parameter_plot
     )
   })
-  
+
   output$fluorescence_dr_parameter_plot <- renderPlot({
     fluorescence_dr_parameter_plot()
   })
-  
+
   output$download_fluorescence_dr_parameter_plot <- downloadHandler(
     filename = function() {
       paste("fluorescence_dr_parameter_plot",  input$format_download_fluorescence_dr_parameter_plot, sep="")
@@ -13534,19 +13537,19 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_fluorescence_dr_parameter_plot,
                  device = pdf)
         }
-        
+
       } else {
         ggsave(filename = file, width = input$width_download_fluorescence_dr_parameter_plot,
                height = input$height_download_fluorescence_dr_parameter_plot,
                dpi = input$dpi_download_fluorescence_dr_parameter_plot,
                device = png)
       }
-      
+
     },
     contentType = ifelse(input$format_download_fluorescence_dr_parameter_plot == ".pdf", "image/pdf", "image/png")
-    
+
   )
-  
+
   selected_inputs_parameter_fluorescence_dr_parameter_plot <- reactive({
     results <- results$fluorescence
     if(is.null(results)) return(NULL)
@@ -13566,40 +13569,40 @@ server <- function(input, output, session){
     }
     dr_parameters
   })
-  
+
   selected_inputs_reference_condition_fluorescence_dr_parameter_plot <- reactive({
     results <- results$fluorescence
     results$expdesign$condition
   })
-  
+
   select_inputs_individual_plots_dose_response_fluorescence_plot <- reactive({
     if (length(results$fluorescence$drFit)>1) names(results$fluorescence$drFit$drFittedSplines)
     else return("")
   })
-  
+
   select_inputs_individual_plots_dose_response_fluorescence_plot_bt <- reactive({
     if (length(results$fluorescence$drFit)>1 && results$fluorescence$control$nboot.dr > 1) names(results$fluorescence$drFit$drBootSplines)
     else return("")
   })
-  
+
   observe({
     updateSelectInput(inputId = "parameter_dr_parameter_fluorescence_plot",
                       choices = selected_inputs_parameter_fluorescence_dr_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "reference_condition_fluorescence_dr_parameter_plot",
                       choices = selected_inputs_reference_condition_fluorescence_dr_parameter_plot()
     )})
-  
+
   observe({
     updateSelectInput(inputId = "individual_plots_dose_response_fluorescence_plot_bt",
                       choices = select_inputs_individual_plots_dose_response_fluorescence_plot_bt()
     )})
-  
+
   # Report ####
   volumes <- getVolumes() # this makes the directory at the base of your computer.
-  
+
   observe({
     if(!is.null(results$growth)){
       showTab(inputId = "tabsetPanel_Report", target = "tabPanel_report_growth")
@@ -13612,9 +13615,9 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_Report", target = "tabPanel_report_fluorescence")
     }
   })
-  
+
   ## Report Growth ####
-  
+
   output$download_report_growth_pdf <- downloadHandler(
     filename = function() {
       paste0("GrowthReport.", input$report_filetype_growth)
@@ -13665,7 +13668,7 @@ server <- function(input, output, session){
     },
     contentType = paste0(".", input$report_filetype_growth)
   )
-  
+
   output$download_report_growth_html <- downloadHandler(
     filename = function() {
       paste0("GrowthReport.", input$report_filetype_growth)
@@ -13687,11 +13690,11 @@ server <- function(input, output, session){
     },
     contentType = paste0(".", input$report_filetype_growth)
   )
-  
-  
-  
+
+
+
   ## Report Fluorescence ####
-  
+
   output$download_report_fluorescence_pdf <- downloadHandler(
     filename = function() {
       paste0("FluorescenceReport.", input$report_filetype_fluorescence)
@@ -13742,7 +13745,7 @@ server <- function(input, output, session){
     },
     contentType = paste0(".", input$report_filetype_fluorescence)
   )
-  
+
   output$download_report_fluorescence_html <- downloadHandler(
     filename = function() {
       paste0("FluorescenceReport.", input$report_filetype_fluorescence)
@@ -13764,13 +13767,13 @@ server <- function(input, output, session){
     },
     contentType = paste0(".", input$report_filetype_fluorescence)
   )
-  
+
   # Bug report message ####
   github_url <- a("QurvE Github", href="https://github.com/NicWir/QurvE/issues")
   output$bug_report <- renderUI({
     tagList("Please report bugs and user feedback at:", github_url)
   })
-  
+
   # Export RData files ####
   observe({
     if(!is.null(results$growth)){
@@ -13784,7 +13787,7 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_Export_Data", target = "tabPanel_export_data_fluorescence")
     }
   })
-  
+
   ## RData Growth ####
   output$export_RData_growth <- downloadHandler(
     filename = function() {
@@ -13804,7 +13807,7 @@ server <- function(input, output, session){
     },
     contentType = paste0(".RData")
   )
-  
+
   ## RData Fluorescence ####
   output$export_RData_fluorescence <- downloadHandler(
     filename = function() {
@@ -13824,7 +13827,7 @@ server <- function(input, output, session){
     },
     contentType = paste0(".RData")
   )
-  
+
   # Import RData files
   ## Growth
   output$RData_growth_uploaded <- reactive({
@@ -13832,7 +13835,7 @@ server <- function(input, output, session){
     else return(TRUE)
   })
   outputOptions(output, 'RData_growth_uploaded', suspendWhenHidden=FALSE)
-  
+
   observeEvent(input$read_RData_growth,{
     showModal(modalDialog("Reading data file...", footer=NULL))
     try(load(input$import_RData_growth$datapath))
@@ -13853,12 +13856,12 @@ server <- function(input, output, session){
     else return(TRUE)
   })
   outputOptions(output, 'RData_fluorescence_uploaded', suspendWhenHidden=FALSE)
-  
+
   observeEvent(input$read_RData_fluorescence,{
     showModal(modalDialog("Reading data file...", footer=NULL))
     try(load(input$import_RData_fluorescence$datapath))
     try(results$fluorescence <- object)
-    
+
     if(!is.null("results$fluorescence")){
       ## ENABLE DISABLED PANELS AFTER RUNNING COMPUTATION
       shinyjs::enable(selector = "#navbar li a[data-value=tabPanel_Export_RData]")
@@ -13875,7 +13878,7 @@ server <- function(input, output, session){
     hide("continue_btn")
   })
   show_continue_button()
-  
+
   # Close the app when the session completes ####
   if(!interactive()) {
     session$onSessionEnded(function() {
@@ -13883,12 +13886,12 @@ server <- function(input, output, session){
       q("no")
     })
   }
-  
+
   # Ensure that the application will stop the websocket server started by shiny::runApp() and the underlying R process when the browser window is closed.
   # session$onSessionEnded(function() {
   #   stopApp()
   # })
-  
+
 }
 
 shinyApp(ui = ui, server = server)
