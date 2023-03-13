@@ -7675,7 +7675,9 @@ server <- function(input, output, session){
     },
     content = function(file) {
       table <- growth_data_custom_processed()
+      colnames(table)[-1] <- table[1, -1]
       colnames(table) <- gsub("<sub>", "_", gsub("</sub>|<sup>|</sup>", "", gsub("<br>", " ", colnames(table))))
+      table <- table[-1,]
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
@@ -7686,7 +7688,9 @@ server <- function(input, output, session){
     },
     content = function(file) {
       table <- custom_table_fluorescence_processed()
+      colnames(table)[-1] <- table[1, -1]
       colnames(table) <- gsub("<sub>", "_", gsub("</sub>|<sup>|</sup>", "", gsub("<br>", " ", colnames(table))))
+      table <- table[-1,]
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
@@ -7697,7 +7701,9 @@ server <- function(input, output, session){
     },
     content = function(file) {
       table <- custom_table_norm_fluorescence_processed()
+      colnames(table)[-1] <- table[1, -1]
       colnames(table) <- gsub("<sub>", "_", gsub("</sub>|<sup>|</sup>", "", gsub("<br>", " ", colnames(table))))
+      table <- table[-1,]
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
@@ -7708,7 +7714,9 @@ server <- function(input, output, session){
     },
     content = function(file) {
       table <- custom_data_table_expdesign()
+      colnames(table)[-1] <- table[1, -1]
       colnames(table) <- gsub("<sub>", "_", gsub("</sub>|<sup>|</sup>", "", gsub("<br>", " ", colnames(table))))
+      table <- table[-1,]
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
@@ -7719,7 +7727,9 @@ server <- function(input, output, session){
     },
     content = function(file) {
       table <- parsed_data_table_growth()
+      colnames(table)[-1] <- table[1, -1]
       colnames(table) <- gsub("<sub>", "_", gsub("</sub>|<sup>|</sup>", "", gsub("<br>", " ", colnames(table))))
+      table <- table[-1,]
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
@@ -7730,7 +7740,9 @@ server <- function(input, output, session){
     },
     content = function(file) {
       table <- parsed_data_table_fluorescence()
+      colnames(table)[-1] <- table[1, -1]
       colnames(table) <- gsub("<sub>", "_", gsub("</sub>|<sup>|</sup>", "", gsub("<br>", " ", colnames(table))))
+      table <- table[-1,]
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
@@ -7741,7 +7753,9 @@ server <- function(input, output, session){
     },
     content = function(file) {
       table <- parsed_data_table_norm_fluorescence()
+      colnames(table)[-1] <- table[1, -1]
       colnames(table) <- gsub("<sub>", "_", gsub("</sub>|<sup>|</sup>", "", gsub("<br>", " ", colnames(table))))
+      table <- table[-1,]
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
@@ -7753,7 +7767,9 @@ server <- function(input, output, session){
     content = function(file) {
       if(is.null(results$parsed_data) || length(results$parsed_data$expdesign)<2) return(NULL)
       table <- results$parsed_data$expdesign
+      colnames(table)[-1] <- table[1, -1]
       colnames(table) <- gsub("<sub>", "_", gsub("</sub>|<sup>|</sup>", "", gsub("<br>", " ", colnames(table))))
+      table <- table[-1,]
       QurvE:::write.csv.utf8.BOM(table, file)
     }
   )
