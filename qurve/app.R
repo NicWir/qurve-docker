@@ -540,7 +540,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                     h4("No data is stored on the server, and each user session runs in an isolated Docker container for added security and privacy.", align = "center"),
                     HTML("<br>"),
                     div(style = "text-align: center; font-size: larger;",
-                        a("QurvE User Manual", href = "https://nicwir.github.io/QurvE/articles/shiny_app_manual.html", align = "center")
+                        a("QurvE App User Manual", href = "https://nicwir.github.io/QurvE/articles/shiny_app_manual.html", align = "center")
                     ),
                     HTML("<br>")
                   ),
