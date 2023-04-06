@@ -12,7 +12,7 @@ rmarkdown::find_pandoc()
 growth.report <- function(
     grofit, out.dir = tempdir(), out.nm = NULL, ec50 = FALSE,
     format = c("pdf", "html"),
-    export = FALSE, parallelize = TRUE, ...
+    export = FALSE, parallelize = FALSE, ...
 )
 {
   if (any(format %in% "pdf"))
@@ -196,7 +196,7 @@ growth.report <- function(
 fl.report <- function(
     flFitRes, out.dir = tempdir(), out.nm = NULL, ec50 = FALSE,
     format = c("pdf", "html"),
-    export = FALSE, parallelize = TRUE, ...
+    export = FALSE, parallelize = FALSE, ...
 )
 {
   if (any(format %in% "pdf"))
@@ -8143,7 +8143,8 @@ server <- function(input, output, session){
                                                      nboot.dr = nboot.dr,
                                                      suppress.messages = T,
                                                      report = NULL,
-                                                     shiny = TRUE
+                                                     shiny = TRUE,
+                                                     parallelize = FALSE
 
                               )
                             )
@@ -8493,7 +8494,8 @@ server <- function(input, output, session){
                                                  export.fig = FALSE,
                                                  shiny = TRUE,
                                                  tmax = tmax,
-                                                 max.growth = max.growth
+                                                 max.growth = max.growth,
+                                                 parallelize = FALSE
                               )
                             )
       )
