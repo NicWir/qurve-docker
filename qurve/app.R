@@ -15339,8 +15339,52 @@ server <- function(input, output, session){
                       choices = select_inputs_individual_plots_dose_response_fluorescence_plot_bt()
     )})
 
-  # Report ####
+  # Reports ####
   volumes <- getVolumes() # this makes the directory at the base of your computer.
+
+  tinytex_package_installed <- requireNamespace("tinytex", quietly = TRUE)
+
+  tinytex_install_status <- reactiveVal(FALSE)
+
+  if (!tinytex_package_installed) {
+    shinyjs::disable("install_tinytex")
+    shinyjs::addTooltip("install_tinytex", "Please install package 'tinytex' to render PDF reports.")
+  } else {
+    tinytex_install_status(tinytex::is_tinytex())
+  }
+
+
+  output$tinytex_installed <- reactive({
+    return(
+      tinytex_install_status()
+    )
+  })
+  outputOptions(output, "tinytex_installed", suspendWhenHidden = FALSE)
+
+  observeEvent(input$install_tinytex, {
+    showModal(
+      modalDialog(
+        title = "Install TinyTeX",
+        "TinyTeX is required to render PDF reports but was not found on your system. Would you like to install TinyTeX? This requires an active internet connection and can take several minutes.",
+        footer = tagList(
+          modalButton("Cancel"),
+          actionButton("proceed_install", "Install TinyTeX")
+        )
+      )
+    )
+  })
+
+  observeEvent(input$proceed_install, {
+    showModal(
+      modalDialog(HTML("Installing TinyTeX...<br><br>(This requires an active internet connection and will take several minutes)"), footer = NULL)
+    )
+    tinytex::install_tinytex(force = T)
+    tinytex::tlmgr_update()
+
+    tinytex_install_status(TRUE)
+
+    removeModal()
+  })
 
   observe({
     if(!is.null(results$growth)){
@@ -15355,55 +15399,44 @@ server <- function(input, output, session){
     }
   })
 
+  observeEvent(input$run_report_fix, {
+    # check if pandoc is recognized
+    showModal(
+      modalDialog("Running report troubleshooting...", footer = NULL)
+    )
+    pandoc.path <- rmarkdown::find_pandoc()$dir
+    Sys.setenv(RSTUDIO_PANDOC = pandoc.path)
+    Sys.setenv(PANDOC_PATH = pandoc.path)
+
+    # reinstall tinytex
+    tinytex::tlmgr_update()
+    tinytex::reinstall_tinytex()
+    removeModal()
+  })
+
   ## Report Growth ####
+
 
   output$download_report_growth_pdf <- downloadHandler(
     filename = function() {
       paste0("GrowthReport.", input$report_filetype_growth)
     },
     content = function(file) {
-      if (!requireNamespace("tinytex", quietly = TRUE)) {
-        showModal(
-          modalDialog("Please install package 'tinytex' to render PDF reports.", easyClose = T)
-        )
-      } else if(!tinytex::is_tinytex()){
-        # stop("TinyTex was not found on your system. To render PDF reports, please execute tinytex::install_tinytex().")
-        showModal(
-          modalDialog(HTML("TinyTeX is required to render PDF reports but was not found on your system. Installing TinyTeX...<br><br>(This requires and active internet connection and will take several minutes)"), footer = NULL)
-        )
-        update.packages(ask = FALSE, checkBuilt = TRUE, repos='http://cran.us.r-project.org')
-        tinytex::install_tinytex(force = T)
-        tinytex::tlmgr_update()
-        # tinytex::reinstall_tinytex()
-        removeModal()
-        try(
-          suppressWarnings(
-            suppressMessages(
-              growth.report(grofit = results$growth,
-                            out.dir = gsub(paste0("[\\\\|", .Platform$file.sep, "]file.+$"), "", file),
-                            out.nm = gsub(paste0("^.+[\\\\|", .Platform$file.sep, "]"), "", file),
-                            ec50 = ifelse(length(results$growth$drFit) > 1 && length(results$growth$drFit$drTable) > 1, TRUE, FALSE),
-                            format = input$report_filetype_growth,
-                            export = FALSE,
-                            mean.grp = "all", parallelize = F)
-            )
+
+      try(
+        suppressWarnings(
+          suppressMessages(
+            growth.report(grofit = results$growth,
+                          out.dir = gsub(paste0("[\\\\|", .Platform$file.sep, "]file.+$"), "", file),
+                          out.nm = gsub(paste0("^.+[\\\\|", .Platform$file.sep, "]"), "", file),
+                          ec50 = ifelse(length(results$growth$drFit) > 1 && length(results$growth$drFit$drTable) > 1, TRUE, FALSE),
+                          format = input$report_filetype_growth,
+                          export = FALSE,
+                          mean.grp = "all", parallelize = F)
           )
         )
-      } else {
-        try(
-          suppressWarnings(
-            suppressMessages(
-              growth.report(grofit = results$growth,
-                            out.dir = gsub(paste0("[\\\\|", .Platform$file.sep, "]file.+$"), "", file),
-                            out.nm = gsub(paste0("^.+[\\\\|", .Platform$file.sep, "]"), "", file),
-                            ec50 = ifelse(length(results$growth$drFit) > 1 && length(results$growth$drFit$drTable) > 1, TRUE, FALSE),
-                            format = input$report_filetype_growth,
-                            export = FALSE,
-                            mean.grp = "all", parallelize = F)
-            )
-          )
-        )
-      }
+      )
+
     },
     contentType = paste0(".", input$report_filetype_growth)
   )
@@ -15422,7 +15455,7 @@ server <- function(input, output, session){
                           ec50 = ifelse(length(results$growth$drFit) > 1 && length(results$growth$drFit$drTable) > 1, TRUE, FALSE),
                           format = input$report_filetype_growth,
                           export = FALSE,
-                          mean.grp = "all", parallelize = F)
+                          mean.grp = "all")
           )
         )
       )
@@ -15449,9 +15482,9 @@ server <- function(input, output, session){
           modalDialog(HTML("TinyTeX is required to render PDF reports but was not found on your system. Installing TinyTeX...<br><br>(This requires and active internet connection and will take several minutes)"), footer = NULL)
         )
         update.packages(ask = FALSE, checkBuilt = TRUE, repos='http://cran.us.r-project.org')
-        tinytex::install_tinytex(force = T)
+        tinytex::install_tinytex()
         tinytex::tlmgr_update()
-        # tinytex::reinstall_tinytex()
+        tinytex::reinstall_tinytex()
         removeModal()
         try(
           suppressWarnings(
@@ -15462,7 +15495,7 @@ server <- function(input, output, session){
                         ec50 = ifelse(length(results$fluorescence$drFit) > 1 && length(results$fluorescence$drFit$drTable) > 1, TRUE, FALSE),
                         format = input$report_filetype_fluorescence,
                         export = FALSE,
-                        mean.grp = "all", parallelize = F)
+                        mean.grp = "all")
             )
           )
         )
@@ -15476,7 +15509,7 @@ server <- function(input, output, session){
                         ec50 = ifelse(length(results$fluorescence$drFit) > 1 && length(results$fluorescence$drFit$drTable) > 1, TRUE, FALSE),
                         format = input$report_filetype_fluorescence,
                         export = FALSE,
-                        mean.grp = "all", parallelize = F)
+                        mean.grp = "all")
             )
           )
         )
@@ -15499,7 +15532,7 @@ server <- function(input, output, session){
                       ec50 = ifelse(length(results$fluorescence$drFit) > 1 && length(results$fluorescence$drFit$drTable) > 1, TRUE, FALSE),
                       format = input$report_filetype_fluorescence,
                       export = FALSE,
-                      mean.grp = "all", parallelize = F)
+                      mean.grp = "all")
           )
         )
       )
