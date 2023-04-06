@@ -6178,14 +6178,14 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                       ) # sidebarPanel
                                              ) # tabPanel(title = "fluorescence", value = "tabs_export_data_fluorescence",
                                  ), # tabsetPanel(type = "tabs", id = "tabs_report",
-                                 checkboxInput(inputId = "report_issues",
-                                               label = "Creating reports does not work",
-                                               value = FALSE),
-                                 conditionalPanel(condition = "input.report_issues",
-                                                  actionButton(inputId = "run_report_fix",
-                                                               label = "Run Report Troubleshooting"),
-                                                  QurvE:::updateResistantPopover(id = "run_report_fix", title = HTML("<em>Run Report Troubleshooting</em>"), content = HTML("This process will take several minutes!<br><br>Reinstalls TinyTeX, updates tlmgr and ensures that Pandoc is recognized correctly.")),
-                                 )
+                                 # checkboxInput(inputId = "report_issues",
+                                 #               label = "Creating reports does not work",
+                                 #               value = FALSE),
+                                 # conditionalPanel(condition = "input.report_issues",
+                                 #                  actionButton(inputId = "run_report_fix",
+                                 #                               label = "Run Report Troubleshooting"),
+                                 #                  QurvE:::updateResistantPopover(id = "run_report_fix", title = HTML("<em>Run Report Troubleshooting</em>"), content = HTML("This process will take several minutes!<br><br>Reinstalls TinyTeX, updates tlmgr and ensures that Pandoc is recognized correctly.")),
+                                 # )
                         ), # tabPanel("Report",  value = "tabPanel_Report", icon=icon("file-contract"),
                         #___Export RData___####
                         tabPanel(span("Data Export", title = "Export all computation results as RData file."),
