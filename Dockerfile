@@ -23,11 +23,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl-dev \
     libssh2-1-dev \
 	libharfbuzz-dev \
-	libfreetype-dev \
+	libfreetype6-dev \
 	libfribidi-dev  \
 	gnupg \
 	nano \
-	libperl5.34 \
+	libperl-dev \
 	libpoppler-glib-dev
 	
 # Install TinyTeX
