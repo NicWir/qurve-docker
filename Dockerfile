@@ -1,4 +1,4 @@
-FROM rocker/shiny:latest
+FROM rocker/shiny:3.6.0
 
 LABEL maintainer="Nicolas Wirth <mail.nicowirth@gmail.com>"
 
