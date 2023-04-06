@@ -1,4 +1,4 @@
-FROM rocker/shiny:3.6.0
+FROM rocker/shiny:latest
 
 LABEL maintainer="Nicolas Wirth <mail.nicowirth@gmail.com>"
 
@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
     sh -s - --admin --no-path
 
+RUN ls -l /root/.TinyTeX/bin
 RUN ln -s /root/bin/* /usr/local/bin
 RUN /root/.TinyTeX/bin/*/tlmgr path add	
 
