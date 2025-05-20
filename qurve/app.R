@@ -6,7 +6,8 @@ library(shinyFiles, quietly = T)
 library(shinyjs, quietly = T)
 library(shinythemes, quietly = T)
 library(ggplot2, quietly = T)
-options(shiny.maxRequestSize=50*1024^2)
+library(magrittr)
+options(shiny.maxRequestSize=60*1024^2)
 rmarkdown::find_pandoc()
 
 growth.report <- function(
@@ -467,38 +468,6 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                   '.modal-dialog.growthdr { width: fit-content !important; }'
                 ),
                 tagList(
-                  # tags$style(type = 'text/css', '.navbar {
-                  #          font-size: 200px;
-                  #          }',
-                  #
-                  #            '.navbar-dropdown { background-color: #262626;
-                  #          font-family: Arial;
-                  #          font-size: 50px;
-                  #          color: #FF0000; }',
-                  #
-                  #            '.navbar-default .navbar-brand {
-                  #            ;
-                  #          }',
-                  #            '.navbar li a {
-                  #            font-size: 50px;
-                  #          }'
-                  #
-                  # ),
-
-                  # # Create object input$dimension as c(width, height) with the app window size
-                  # tags$head(tags$script('
-                  #               var dimension = [0, 0];
-                  #               $(document).on("shiny:connected", function(e) {
-                  #                   dimension[0] = window.innerWidth;
-                  #                   dimension[1] = window.innerHeight;
-                  #                   Shiny.onInputChange("dimension", dimension);
-                  #               });
-                  #               $(window).resize(function(e) {
-                  #                   dimension[0] = window.innerWidth;
-                  #                   dimension[1] = window.innerHeight;
-                  #                   Shiny.onInputChange("dimension", dimension);
-                  #               });
-                  #           ')),
                   useShinyjs(),
                   shinyjs::extendShinyjs(text = jscode, functions = c("disableTab","enableTab")),
                   shinyjs::inlineCSS(css),
@@ -1117,11 +1086,6 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                             ),
                                                             downloadButton('download_custom_tables_growth_processed',"Download table")
                                                    ),
-                                                   # tabPanel(title = "Fluorescence", value = "tabPanel_custom_tables_fluorescence",
-                                                   #          withSpinner(
-                                                   #            DT::dataTableOutput("custom_table_fluorescence")
-                                                   #          )
-                                                   # ),
                                                    tabPanel(title = "Fluorescence", value = "tabPanel_custom_tables_fluorescence_processed",
                                                             withSpinner(
                                                               DT::dataTableOutput("custom_table_fluorescence_processed")
@@ -1134,11 +1098,6 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                             ),
                                                             downloadButton('download_custom_tables_norm_fluorescence_processed',"Download table")
                                                    ),
-                                                   # tabPanel(title = "Fluorescence 2", value = "tabPanel_custom_tables_fluorescence2",
-                                                   #          withSpinner(
-                                                   #            DT::dataTableOutput("custom_table_fluorescence2")
-                                                   #          )
-                                                   # ),
                                                    tabPanel(title = "Experimental Design", value = "tabPanel_custom_tables_expdesign",
                                                             DT::dataTableOutput('custom_data_table_expdesign'),
                                                             downloadButton('download_custom_tables_expdesign',"Download table")
@@ -1184,9 +1143,6 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                             ),
                                                             downloadButton('download_parsed_data_table_norm_fluorescence',"Download table")
                                                    ),
-                                                   # tabPanel(title = "Fluorescence 2", value = "tabPanel_parsed_tables_fluorescence2",
-                                                   #          DT::dataTableOutput('parsed_data_table_fluorescence2')
-                                                   # ),
                                                    tabPanel(title = "Experimental Design", value = "tabPanel_parsed_tables_expdesign",
                                                             DT::dataTableOutput('parsed_data_table_expdesign'),
                                                             downloadButton('download_parsed_tables_expdesign',"Download table")
@@ -2259,6 +2215,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                            column(12,
                                                                                   div(
                                                                                     downloadButton('download_growth_validate_spline',"Download Plot"),
+
                                                                                     radioButtons("format_download_growth_validate_spline",
                                                                                                  label = NULL,
                                                                                                  choices = c("PNG" = ".png",
@@ -2393,6 +2350,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                            column(12,
                                                                                   div(
                                                                                     downloadButton('download_growth_validate_model',"Download Plot"),
+
                                                                                     radioButtons("format_download_growth_validate_model",
                                                                                                  label = NULL,
                                                                                                  choices = c("PNG" = ".png",
@@ -2548,10 +2506,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     numericInput(inputId = "dpi_download_growth_validate_spline_bt",
                                                                                                  label = "DPI",
                                                                                                  value = 300)
-                                                                             )
-                                                                           ), # fluidRow
-                                                                           column(12,
-                                                                                  div(
+                                                                             ), # column
+                                                                             column(width = 4,
                                                                                     downloadButton('download_growth_validate_spline_bt',"Download Plot"),
                                                                                     radioButtons("format_download_growth_validate_spline_bt",
                                                                                                  label = NULL,
@@ -2728,6 +2684,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     style="float:right")
                                                                            ), # column
                                                                  )
+
                                                         ),
                                                         ###___Spline Fits___####
                                                         tabPanel(title = "Nonparametric fits", value = "tabPanel_Validate_Fluorescence_Spline",
@@ -2887,6 +2844,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                            column(12,
                                                                                   div(
                                                                                     downloadButton('download_fluorescence_validate_spline',"Download Plot"),
+
                                                                                     radioButtons("format_download_fluorescence_validate_spline",
                                                                                                  label = NULL,
                                                                                                  choices = c("PNG" = ".png",
@@ -3260,7 +3218,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      )
                                                                    ),
 
@@ -3272,7 +3231,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      )
                                                                    ),
 
@@ -3446,7 +3406,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     selected = names(QurvE:::single_hue_palettes),
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      ),
                                                                      QurvE:::updateResistantPopover(id = "color_palettes_group_plot",
                                                                                                     title = HTML("<em>Define the colors used to display sample groups with identical concentrations</em>"), placement = "top",
@@ -3486,6 +3447,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_growth_group_plot',"Download Plot"),
+
                                                                             radioButtons("format_download_growth_group_plot",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -3523,7 +3485,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      )
                                                                    ),
 
@@ -3650,6 +3613,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_growth_parameter_plot',"Download Plot"),
+
                                                                             radioButtons("format_download_growth_parameter_plot",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -3695,12 +3659,14 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      ),
-                                                                     checkboxInput(inputId = "order_matters_visualize_growth_grid",
-                                                                                   label = "Select order matters",
-                                                                                   value = FALSE
-                                                                     ),
+                                                                   ),
+
+                                                                   checkboxInput(inputId = "order_matters_visualize_growth_grid",
+                                                                                 label = "Select order matters",
+                                                                                 value = FALSE
                                                                    ),
 
                                                                    conditionalPanel(
@@ -3711,7 +3677,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      )
                                                                    ),
 
@@ -3893,6 +3860,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_growth_grid_plot',"Download Plot"),
+
                                                                             radioButtons("format_download_growth_grid_plot",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -4088,6 +4056,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     column(12,
                                                                                            div(
                                                                                              downloadButton('download_dose_response_growth_plot_combined',"Download Plot"),
+
                                                                                              radioButtons("format_download_dose_response_growth_plot_combined",
                                                                                                           label = NULL,
                                                                                                           choices = c("PNG" = ".png",
@@ -4152,6 +4121,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     column(12,
                                                                                            div(
                                                                                              downloadButton('download_dose_response_growth_plot_individual',"Download Plot"),
+
                                                                                              radioButtons("format_download_dose_response_growth_plot_individual",
                                                                                                           label = NULL,
                                                                                                           choices = c("PNG" = ".png",
@@ -4345,6 +4315,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_dose_response_growth_plot_model',"Download Plot"),
+
                                                                             radioButtons("format_download_dose_response_growth_plot_model",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -4439,6 +4410,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_dose_response_growth_plot_individual_bt',"Download Plot"),
+
                                                                             radioButtons("format_download_dose_response_growth_plot_individual_bt",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -4532,6 +4504,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_growth_dr_parameter_plot',"Download Plot"),
+
                                                                             radioButtons("format_download_growth_dr_parameter_plot",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -4581,7 +4554,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      )
                                                                    ),
 
@@ -4593,7 +4567,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      )
                                                                    ),
 
@@ -4766,7 +4741,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     selected = names(QurvE:::single_hue_palettes),
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      ),
                                                                      QurvE:::updateResistantPopover(id = "color_palettes_fluorescence_group_plot",
                                                                                                     title = HTML("<em>Define the colors used to display sample groups with identical concentrations</em>"), placement = "top",
@@ -4804,6 +4780,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_fluorescence_group_plot',"Download Plot"),
+
                                                                             radioButtons("format_download_fluorescence_group_plot",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -4850,7 +4827,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      )
                                                                    ),
 
@@ -5016,7 +4994,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     selected = names(QurvE:::single_hue_palettes),
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      ),
                                                                      QurvE:::updateResistantPopover(id = "color_palettes_dual_plot",
                                                                                                     title = HTML("<em>Define the colors used to display sample groups with identical concentrations</em>"), placement = "top",
@@ -5053,6 +5032,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_dual_plot',"Download Plot"),
+
                                                                             radioButtons("format_download_dual_plot",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -5090,7 +5070,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      )
                                                                    ),
 
@@ -5218,20 +5199,15 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_fluorescence_parameter_plot',"Download Plot"),
+
                                                                             radioButtons("format_download_fluorescence_parameter_plot",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
                                                                                                      "PDF" = ".pdf"),
                                                                                          selected = ".png",
-                                                                                         inline = TRUE),
-                                                                            style="float:left"),
-                                                                          div(
-                                                                            actionButton(inputId = "code_fluorescence_parameter_plot",
-                                                                                         label = "Inspect Code",
-                                                                                         icon = icon("code"),
-                                                                                         style="padding:5px; font-size:90%"),
-                                                                            style="float:right")
-                                                                   ) # column
+                                                                                         inline = TRUE)
+                                                                     ), # column
+                                                                   ) # fluidRow
                                                                  ) # mainPanel
                                                         ), #  tabPanel(title = "Parameter plots"
                                                         ### Fluorescence Grid Plots ####
@@ -5262,12 +5238,14 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      ),
-                                                                     checkboxInput(inputId = "order_matters_visualize_fluorescence_grid",
-                                                                                   label = "Select order matters",
-                                                                                   value = FALSE
-                                                                     ),
+                                                                   ),
+
+                                                                   checkboxInput(inputId = "order_matters_visualize_fluorescence_grid",
+                                                                                 label = "Select order matters",
+                                                                                 value = FALSE
                                                                    ),
 
                                                                    conditionalPanel(
@@ -5278,7 +5256,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     choices = "",
                                                                                     multiple = TRUE,
                                                                                     options = list(closeAfterSelect = FALSE,
-                                                                                                   plugins= list('remove_button'))
+                                                                                                   plugins = list('remove_button', 'drag_drop'),
+                                                                                                   placeholder = 'Select and drag to reorder')
                                                                      )
                                                                    ),
 
@@ -5460,6 +5439,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_fluorescence_grid_plot',"Download Plot"),
+
                                                                             radioButtons("format_download_fluorescence_grid_plot",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -5651,6 +5631,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     column(12,
                                                                                            div(
                                                                                              downloadButton('download_dose_response_plot_fluorescence_combined',"Download Plot"),
+
                                                                                              radioButtons("format_download_dose_response_plot_fluorescence_combined",
                                                                                                           label = NULL,
                                                                                                           choices = c("PNG" = ".png",
@@ -5716,6 +5697,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                     column(12,
                                                                                            div(
                                                                                              downloadButton('download_dose_response_fluorescence_plot_individual',"Download Plot"),
+
                                                                                              radioButtons("format_download_dose_response_fluorescence_plot_individual",
                                                                                                           label = NULL,
                                                                                                           choices = c("PNG" = ".png",
@@ -5865,6 +5847,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_dose_response_model_fluorescence_plot_individual',"Download Plot"),
+
                                                                             radioButtons("format_download_dose_response_model_fluorescence_plot_individual",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -5959,6 +5942,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_dose_response_fluorescence_plot_individual_bt',"Download Plot"),
+
                                                                             radioButtons("format_download_dose_response_fluorescence_plot_individual_bt",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -6056,6 +6040,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                    column(12,
                                                                           div(
                                                                             downloadButton('download_fluorescence_dr_parameter_plot',"Download Plot"),
+
                                                                             radioButtons("format_download_fluorescence_dr_parameter_plot",
                                                                                          label = NULL,
                                                                                          choices = c("PNG" = ".png",
@@ -6090,8 +6075,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
 
                                                                    selectInput(inputId = 'report_filetype_growth',
                                                                                label = 'Choose file type',
-                                                                               choices = c('PDF' = 'pdf',
-                                                                                           'HTML' = 'html')),
+                                                                               choices = c('PDF' = 'pdf', 'HTML' = 'html')),
 
                                                                    conditionalPanel(condition = "input.report_filetype_growth == 'pdf' && output.tinytex_installed",
                                                                                     fluidRow(
@@ -6135,8 +6119,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                       sidebarPanel(width = 6,
                                                                    selectInput(inputId = 'report_filetype_fluorescence',
                                                                                label = 'Choose file type',
-                                                                               choices = c('PDF' = 'pdf',
-                                                                                           'HTML' = 'html')),
+                                                                               choices = c('PDF' = 'pdf', 'HTML' = 'html')),
 
                                                                    conditionalPanel(condition = "input.report_filetype_fluorescence == 'pdf' && output.tinytex_installed",
                                                                                     fluidRow(
@@ -6146,19 +6129,6 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                                                                                                               label = "Render Report",
                                                                                                               icon = icon("file-pdf"),
                                                                                                               style="padding:5px; font-size:120%"),
-                                                                                               style="float:right")
-                                                                                      )
-                                                                                    )
-                                                                   ),
-
-                                                                   conditionalPanel(condition = "!output.tinytex_installed && input.report_filetype_fluorescence == 'pdf'",
-                                                                                    fluidRow(
-                                                                                      column(12,
-                                                                                             div(
-                                                                                               actionButton("install_tinytex",
-                                                                                                            label ="Install TinyTeX",
-                                                                                                            icon = icon("cloud-arrow-down"),
-                                                                                                            style="padding:5px; font-size:120%"),
                                                                                                style="float:right")
                                                                                       )
                                                                                     )
@@ -6286,8 +6256,8 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                         tabPanel("About Us",
                                  mainPanel(
                                    h2("Creators"),
-                                   'Nicolas Wirth', tags$a(icon("twitter"), href="https://twitter.com/JonathanFunk12"), br(),
-                                   'Jonathan Funk', tags$a(icon("twitter"), href="https://twitter.com/The_NiWi"),
+                                   'Nicolas Wirth', tags$a(icon("twitter"), href="https://twitter.com/The_NiWi"), br(),
+                                   'Jonathan Funk', tags$a(icon("twitter"), href="https://twitter.com/JonathanFunk12"),
                                    h2("Bug reports"),
                                    uiOutput("bug_report"),
                                    h2("Cite QurvE"),
@@ -6301,7 +6271,6 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
                   ) # hidden(
                 ) # tagList(
 )
-
 
 #____SERVER____####
 
