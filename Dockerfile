@@ -1,4 +1,4 @@
-FROM rocker/shiny:latest
+FROM rocker/shiny:jammy
 
 LABEL maintainer="Nicolas Wirth <mail.nicowirth@gmail.com>"
 
@@ -29,22 +29,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	nano \
 	libperl-dev \
 	libpoppler-glib-dev
-	
+
 # Install TinyTeX
 RUN wget -qO- "https://yihui.org/tinytex/install-unx.sh" | \
     sh -s - --admin --no-path
 
 RUN ls -l /root/.TinyTeX/bin
 RUN ln -s /root/bin/* /usr/local/bin
-RUN /root/.TinyTeX/bin/*/tlmgr path add	
+RUN /root/.TinyTeX/bin/*/tlmgr path add
 
 RUN \
     wget -O - https://github.com/dawbarton/pdf2svg/archive/v0.2.3.tar.gz | tar xzv && \
     cd pdf2svg-0.2.3 && \
     ./configure && \
     make && \
-    make install	
-	
+    make install
+
 # Install the ttf-mscorefonts-installer package
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ttf-mscorefonts-installer
@@ -52,10 +52,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y ttf-mscorefonts-installer
 RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
 
 # Update font cache
-RUN fc-cache -f 
+RUN fc-cache -f
 
 #RUN rm -rf /var/lib/apt/lists/*
-	
+
 # Install QurvE from CRAN for faster installation of dependencies
 RUN R -e "install.packages('QurvE', repos='https://cran.rstudio.com/', Ncpus = 4, dependencies = T)"
 # EXPERIMENTAL: Install QurvE from GitHub to install development version
@@ -66,7 +66,7 @@ RUN R -e "remotes::install_github('NicWir/QurvE', dependencies = FALSE)"
 # Install missing fonts (Arial)
 RUN apt-get remove -y ttf-mscorefonts-installer
 RUN apt-get install -y ttf-mscorefonts-installer
-RUN fc-cache -f 
+RUN fc-cache -f
 
 # copy the app to the image
 RUN mkdir /root/qurve
