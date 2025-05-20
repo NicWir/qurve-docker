@@ -6276,10 +6276,6 @@ ui <- fluidPage(theme = shinythemes::shinytheme(theme = "spacelab"),
 
 server <- function(input, output, session){
 
-  # output$debug <- renderText({
-  #   getwd()
-  # })
-
   # Disable navbar menus before running computations
   shinyjs::disable(selector = "#navbar li a[data-value=tabPanel_Export_RData]")
   shinyjs::disable(selector = "#navbar li a[data-value=tabPanel_Report]")
@@ -6589,6 +6585,12 @@ server <- function(input, output, session){
   # Read data upon click on [Read data]
   observeEvent(input$read_custom,{
     showModal(modalDialog("Reading data input...", footer=NULL))
+    # Log the event:
+    user_id <- session$token     # shiny’s built-in session identifier
+    ts      <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    cat(sprintf("%s [INFO] User %s initiated data parsing\n", ts, user_id))
+
+
     growth.file <- input$custom_file_growth
     fl.file <- input$custom_file_fluorescence
     fl2.file <- input$custom_file_fluorescence2
@@ -6802,9 +6804,13 @@ server <- function(input, output, session){
       hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_plots_norm_fluorescence")
     }
     if(exists("custom_table_fluorescence_processed") && !is.null(custom_table_fluorescence_processed()) &&
-       exists("growth_data_custom_processed") && !is.null(growth_data_custom_processed()) &&
-       all(results$custom_data$growth == results$custom_data$fluorescence, na.rm = T)){
-      showModal(modalDialog("growth and Fluorescence data are identical. Did you assign the correct files and/or sheets?", easyClose = T))
+       exists("growth_data_custom_processed") && !is.null(growth_data_custom_processed())){
+      # Convert to numeric matrices by skipping the metadata columns
+      growth_vals <- as.matrix(sapply(results$custom_data$growth[, -(1:3)], as.numeric))
+      fluorescence_vals <- as.matrix(sapply(results$custom_data$fluorescence[, -(1:3)], as.numeric))
+      if(all(growth_vals == fluorescence_vals, na.rm = TRUE)){
+        showModal(modalDialog("growth and Fluorescence data are identical. Did you assign the correct files and/or sheets?", easyClose = T))
+      }
     }
   })
 
@@ -6950,88 +6956,6 @@ server <- function(input, output, session){
                   escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(table_fl)-3)))
   })
 
-  ### Render custom fluorescence 2 table
-  # output$custom_table_fluorescence2 <- DT::renderDT({
-  #   inFile <- input$custom_file_fluorescence2
-  #
-  #   if(is.null(inFile))
-  #     return(NULL)
-  #
-  #   filename <- inFile$datapath
-  #   dec <- input$decimal_separator_custom_fluorescence2
-  #   csvsep <- input$separator_custom_fluorescence2
-  #   if (stringr::str_replace_all(filename, ".{1,}\\.", "") == "csv") {
-  #     f2 <-
-  #       utils::read.csv(
-  #         filename,
-  #         dec = dec,
-  #         sep = csvsep,
-  #         header = FALSE,
-  #         stringsAsFactors = FALSE,
-  #         fill = T,
-  #         na.strings = "",
-  #         quote = "",
-  #         comment.char = "",
-  #         check.names = F
-  #       )
-  #   } else if (stringr::str_replace_all(filename, ".{1,}\\.", "") == "xls" |
-  #              stringr::str_replace(filename, ".{1,}\\.", "") == "xlsx") {
-  #     showModal(modalDialog("Reading data file...", footer=NULL))
-  #     f2 <- data.frame(suppressMessages(readxl::read_excel(filename, col_names = FALSE, sheet = input$custom_fluorescence2_sheets, progress = T)))
-  #     removeModal()
-  #   } else if (stringr::str_replace_all(filename, ".{1,}\\.", "") == "tsv") {
-  #     f2 <-
-  #       utils::read.csv(
-  #         filename,
-  #         dec = dec,
-  #         sep = "\t",
-  #         header = FALSE,
-  #         stringsAsFactors = FALSE,
-  #         fill = T,
-  #         na.strings = "",
-  #         quote = "",
-  #         comment.char = "",
-  #         check.names = F
-  #       )
-  #   } else if (stringr::str_replace_all(filename, ".{1,}\\.", "") == "txt") {
-  #     f2 <-
-  #       utils::read.table(
-  #         filename,
-  #         dec = dec,
-  #         sep = "\t",
-  #         header = FALSE,
-  #         stringsAsFactors = FALSE,
-  #         fill = T,
-  #         na.strings = "",
-  #         quote = "",
-  #         comment.char = "",
-  #         check.names = F
-  #       )
-  #   }
-  #   f2[-(1:3),] <- apply(f2[-(1:3),], 2, as.numeric) %>% apply(., 2, round, digits = 2)
-  #
-  #   #### Render experimental design table
-  #   if(!exists("output$custom_data_table_expdesign")){
-  #     output$custom_data_table_expdesign <- DT::renderDT({
-  #
-  #       f2.mat <- t(f2)
-  #       label <- unlist(lapply(1:nrow(f2.mat), function(x) paste(f2.mat[x,1], f2.mat[x,2], f2.mat[x,3], sep = " | ")))
-  #       condition <- f2.mat[, 1]
-  #       replicate <- f2.mat[, 2]
-  #       concentration <- f2.mat[, 3]
-  #
-  #       expdesign <- data.frame(label, condition, replicate, concentration, check.names = FALSE)
-  #
-  #       expdesign[-1, ]
-  #     })
-  #   }
-  #
-  #   colnames(f2)[1] <- "Time"
-  #   f2[1,1] <- ""
-  #   DT::datatable(f2,
-  #             options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
-  #             escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(f2)-3)))
-  # })
 
   custom_raw_growth_plot <- reactive({
     if(is.null(results$custom_data) || length(results$custom_data$growth) < 2) return(NULL)
@@ -7195,6 +7119,11 @@ server <- function(input, output, session){
 
   # Generate random dataset
   observeEvent(input$submit.random.data.growth, {
+    # Log the event:
+    user_id <- session$token     # shiny’s built-in session identifier
+    ts      <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    cat(sprintf("%s [INFO] User %s created randomized dataset\n", ts, user_id))
+
     d <- ifelse(input$d.random.growth == "", 35, as.numeric(input$d.random.growth))
     y0 <- ifelse(input$y0.random.growth == "", 0.05, as.numeric(input$y0.random.growth))
     tmax <- ifelse(input$tmax.random.growth == "", 24, as.numeric(input$tmax.random.growth))
@@ -7211,9 +7140,6 @@ server <- function(input, output, session){
       # show [Run Computation] button in Computation-Growth
       show("run_growth")
     }
-    # if("growth" %in% names(results$custom_data) && length(results$custom_data$fluorescence2)>1){
-    #   showTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_fluorescence2")
-    # }
 
     # Remove eventually pre-loaded parsed data
     results$parsed_data <- NULL
@@ -7561,6 +7487,11 @@ server <- function(input, output, session){
 
   #### Parse data and extract read tabs
   observeEvent(input$parse_data,{
+    # Log the event:
+    user_id <- session$token     # shiny’s built-in session identifier
+    ts      <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+    cat(sprintf("%s [INFO] User %s initiated data parsing\n", ts, user_id))
+
     if(input$norm_type_parse == "fluorescence 2"){
       fl.normtype <- "fl2"
     } else {
@@ -7670,9 +7601,7 @@ server <- function(input, output, session){
       showTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_plots_fluorescence")
       shinyjs::enable(selector = "#navbar li a[data-value=navbarMenu_Computation]")
     }
-    # if("growth" %in% names(results$parsed_data) && length(results$parsed_data$fluorescence2)>1){
-    #   showTab(inputId = "tabsetPanel_parsed_tables", target = "tabPanel_parsed_tables_fluorescence2")
-    # }
+
     # Remove eventually pre-loaded custom data
     results$custom_data <- NULL
     hideTab(inputId = "tabsetPanel_custom_tables", target = "tabPanel_custom_tables_growth_processed")
@@ -7750,22 +7679,7 @@ server <- function(input, output, session){
                   escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(parsed_data_table_norm_fluorescence())-3)))
 
   })
-  # output$parsed_data_table_fluorescence2 <- DT::renderDT({
-  #
-  #   if(is.null(results$parsed_data) || length(results$parsed_data$fluorescence2)<2) return(NULL)
-  #
-  #   table_fl2 <- t(results$parsed_data$fluorescence2)
-  #   table_fl2[-(1:3), ] <- apply(apply(table_fl2[-(1:3), ], 2, as.numeric), 2, round, digits = 1)
-  #   rownames(table_fl2)[-(1:3)] <- ""
-  #   table_fl2 <- cbind(data.frame("Time" = c("","","", round(as.numeric(results$parsed_data$time[1,]), digits = 2))),
-  #                      table_fl2)
-  #
-  #   table_fl2 <- DT::datatable(table_fl2,
-  #                          options = list(pageLength = 25, info = FALSE, lengthMenu = list(c(15, 25, 50, -1), c("15","25", "50", "All")) ),
-  #                          escape = FALSE, rownames = c("Condition", "Replicate", "Concentration", rep("", nrow(table_fl2)-3)))
-  #
-  #   table_fl2
-  # })
+
   parsed_data_table_expdesign <- reactive({
     if(is.null(results$parsed_data) || length(results$parsed_data$expdesign)<2) return(NULL)
     expdesign <- results$parsed_data$expdesign
@@ -7974,7 +7888,6 @@ server <- function(input, output, session){
 
   observeEvent(input$run_growth,{
     ## Read data
-    # grodata <- read_data(inFile$datapath, sheet.growth = input$custom_growth_sheets, csvsep = input$separator_custom_growth, dec = input$decimal_separator_custom_growth)
     # Choose data input
     if(!is.null(results$custom_data)){
       grodata <- results$custom_data
@@ -8698,7 +8611,9 @@ server <- function(input, output, session){
                                "y<sub>max</sub>" = round(as.numeric(res.table.gc$A.spline), 3),
                                "ΔY" = round(as.numeric(res.table.gc$dY.spline), 3),
                                "t<sub>max</sub>" = ifelse(is.na(res.table.gc$mu2.spline), round(as.numeric(res.table.gc$tmax.spline), 2), paste0("<strong>", round(as.numeric(res.table.gc$tmax.spline), 2), "</strong>", " (", round(as.numeric(res.table.gc$tmax2.spline), 2), ")")),
-                               "smooth.<br>fac" = res.table.gc$smooth.spline, check.names = F)
+                               "AUC" = ifelse(is.na(res.table.gc$integral.spline), "", paste0(round(as.numeric(res.table.gc$integral.spline), 3))),
+                               "smooth.<br>fac" = res.table.gc$smooth.spline, check.names = F
+    )
     table_spline
   })
 
@@ -8712,7 +8627,7 @@ server <- function(input, output, session){
     gcTable <- results$growth$gcFit$gcTable
     table <- QurvE:::table_group_growth_spline(gcTable)
     colnames(table) <- c("Sample|Conc.", "\u03bc<sub>max</sub>", "t<sub>D</sub>", "\u03bb",
-                         "\u2206Y", "y<sub>max</sub>", "t(\u03bc<sub>max</sub>)")
+                         "\u2206Y", "y<sub>max</sub>", "t(\u03bc<sub>max</sub>)", "AUC")
     table
   })
 
@@ -8762,6 +8677,13 @@ server <- function(input, output, session){
                                                     round(as.numeric(res.table.gc$stddY.bt ), 3)
                                              )
                                ),
+                               "AUC" = ifelse(res.table.gc$integral.bt==0 | is.na(res.table.gc$integral.bt),
+                                              "",
+                                              paste0(round(as.numeric(res.table.gc$integral.bt), 2) ,
+                                                     " \u00B1 ",
+                                                     round(as.numeric(res.table.gc$stdintegral.bt ), 2)
+                                              )
+                               ),
                                "smooth.<br>fac" = res.table.gc$smooth.spline, check.names = F)
     table_spline
   })
@@ -8783,7 +8705,6 @@ server <- function(input, output, session){
                                 "t<sub>D</sub>" = paste(ifelse(res.table.gc$mu.model==0 | is.na(res.table.gc$mu.model), "", paste(round(log(2)/as.numeric(res.table.gc$mu.model), 2), "\u00B1", round(sqrt(((-log(2)*as.numeric(res.table.gc$stdmu.model))/(as.numeric(res.table.gc$mu.model))^2)^2), 2)))),
                                 "λ" = ifelse(res.table.gc$lambda.model==0 | is.na(res.table.gc$lambda.model), "", paste(round(as.numeric(res.table.gc$lambda.model), 2), "\u00B1", round(as.numeric(res.table.gc$stdlambda.model),3))),
                                 "A" = ifelse(res.table.gc$A.model==0 | is.na(res.table.gc$A.model), "", paste(round(as.numeric(res.table.gc$A.model), 3), "\u00B1", round(as.numeric(res.table.gc$stdA.model),3))),
-                                "RMSE" = ifelse(res.table.gc$RMSE.model==0 | is.na(res.table.gc$RMSE.model), "", paste(round(as.numeric(res.table.gc$RMSE.model), 3))),
                                 stringsAsFactors = FALSE, check.names = F)
       if(!is.null(res.table.gc)){
         if ( "richards" %in% res.table.gc$used.model  ){
@@ -9047,7 +8968,9 @@ server <- function(input, output, session){
                                "y<sub>max</sub>" = round(as.numeric(res.table.fl$A.spline), 3),
                                "ΔY" = round(as.numeric(res.table.fl$dY.spline), 3),
                                "x<sub>max</sub>" = ifelse(is.na(res.table.fl$max_slope2.spline), round(as.numeric(res.table.fl$x.max.spline), 2), paste0("<strong>", round(as.numeric(res.table.fl$x.max.spline), 2), "</strong>", " (", round(as.numeric(res.table.fl$x.max2.spline), 2), ")")),
-                               "smooth.<br>fac" = res.table.fl$smooth.spline, check.names = F)
+                               "AUC" = ifelse(is.na(res.table.fl$integral.spline), "", paste0(round(as.numeric(res.table.fl$integral.spline), 2))),
+                               "smooth.<br>fac" = res.table.fl$smooth.spline, check.names = F
+    )
     table_spline
   })
 
@@ -9059,9 +8982,10 @@ server <- function(input, output, session){
 
   table_fluorescence_spline_group <- reactive({
     flTable <- results$fluorescence$flFit$flTable
-    QurvE:::table_group_fluorescence_spline(flTable)
+    table <- QurvE:::table_group_fluorescence_spline(flTable)
     colnames(table) <- c("Sample|Conc.", "slope<sub>max</sub>", "\u03bb",
-                         "\u0394Y", "y<sub>max</sub>", "x(slope<sub>max</sub>)")
+                         "\u0394Y", "y<sub>max</sub>", "x(slope<sub>max</sub>)",
+                         "AUC")
     table
   })
 
@@ -9108,6 +9032,13 @@ server <- function(input, output, session){
                                                     " \u00B1 ",
                                                     round(as.numeric(res.table.fl$stddY.bt ), 3)
                                              )
+                               ),
+                               "AUC" = ifelse(res.table.fl$integral.bt==0 | is.na(res.table.fl$integral.bt),
+                                              "",
+                                              paste0(round(as.numeric(res.table.fl$integral.bt), 2) ,
+                                                     " \u00B1 ",
+                                                     round(as.numeric(res.table.fl$stdintegral.bt ), 2)
+                                              )
                                ),
                                "smooth.<br>fac" = res.table.fl$smooth.spline, check.names = F)
     table_spline
@@ -11880,6 +11811,7 @@ server <- function(input, output, session){
                  dpi = input$dpi_download_growth_group_plot,
                  device = pdf)
         }
+
       } else {
         ggsave(filename = file, width = input$width_download_growth_group_plot,
                height = input$height_download_growth_group_plot,
@@ -11890,7 +11822,6 @@ server <- function(input, output, session){
     },
     contentType = "application/octet-stream"
   )
-
 
   ### DR Plots Spline ####
   observe({
@@ -12079,7 +12010,7 @@ server <- function(input, output, session){
     list(input$restore_dr_growth, input$restore_dr_growth2, input$restore_dr_growth3)
   })
 
-  # Restore previous fit upon click on [Restore Fit]
+  # Restore previous linear fit upon click on [Restore Fit]
   observeEvent(restore_dr_growth_buttons(), {
     if(input$restore_dr_growth==0 && input$restore_dr_growth2==0 && input$restore_dr_growth3==0){
       return()
@@ -12529,138 +12460,6 @@ server <- function(input, output, session){
     },
     contentType = "application/octet-stream"
   )
-
-  # observeEvent(input$rerun_dr_spline_individual, {
-  #
-  #   select_options <- c()
-  #   if(any("l" %in% results$growth$control$fit.opt)) select_options <- c(select_options, 'mu.linfit', 'lambda.linfit', 'dY.linfit',
-  #                                                                        'A.linfit')
-  #   if(any("s" %in% results$growth$control$fit.opt)) select_options <- c(select_options, 'mu.spline', 'lambda.spline',
-  #                                                                        'A.spline', 'dY.spline', 'integral.spline')
-  #   if(any("m" %in% results$growth$control$fit.opt)) select_options <- c(select_options, 'mu.model', 'lambda.model', 'A.model', 'integral.model')
-  #
-  #   # display a modal dialog with a header, textinput and action buttons
-  #   showModal(
-  #     modalDialog(
-  #       tags$h2('Please enter adjusted parameters'),
-  #
-  #       textInput(inputId = "dr_method_growth_rerun_individual",
-  #                   label = "Method", value = results$growth$drFit$control$dr.method),
-  #
-  #       QurvE:::updateResistantPopover(id = "dr_method_growth_rerun_individual",
-  #                 title = HTML("<em>dr.method</em>"),
-  #                 placement = "right",
-  #                 content = "To change the method for the dose-response analysis, please re-run the Computation workflow or select [Combine conditions into a single plot] and click [Re-run]."),
-  #
-  #       selectInput(inputId = "response_parameter_growth_rerun_individual",
-  #                   label = "Response Parameter",
-  #                   choices = select_options,
-  #                   selected =  results$growth$drFit$control$dr.parameter),
-  #       QurvE:::updateResistantPopover(id = "response_parameter_growth_rerun_individual", title = HTML("<em>dr.parameter</em>"), content = "Choose the response parameter to be used for creating a dose response curve.", placement = "top"),
-  #
-  #       conditionalPanel(
-  #         condition = 'input.dr_method_growth_rerun_individual == "spline"',
-  #         tags$div(title="Perform a log(x+1) transformation on concentration values.",
-  #                  checkboxInput(inputId = 'log_transform_concentration_growth_rerun_individual',
-  #                                label = 'Log transform concentration',
-  #                                value =  results$growth$drFit$control$log.x.dr)
-  #         ),
-  #
-  #         tags$div(title="Perform a log(y+1) transformation on response values.",
-  #                  checkboxInput(inputId = 'log_transform_response_growth_rerun_individual',
-  #                                label = 'Log transform response',
-  #                                value =  results$growth$drFit$control$log.y.dr)
-  #         ),
-  #
-  #         textInput(
-  #           inputId = 'smoothing_factor_growth_dr_rerun_individual',
-  #           label = 'Smoothing factor dose-response splines',
-  #           value = "",
-  #           placeholder = "NULL (choose automatically)"
-  #         ),
-  #         QurvE:::updateResistantPopover(id = "smoothing_factor_growth_dr_rerun_individual", title = HTML("<em>smooth.dr</em>"), content = "\\'spar\\' argument in the R function smooth.spline() used to create the dose response curve."),
-  #
-  #         QurvE:::numberInput(
-  #           inputId = 'number_of_bootstrappings_dr_growth_rerun_individual',
-  #           label = 'Number of bootstrappings',
-  #           value = 0,
-  #           min = NA,
-  #           max = NA,
-  #           placeholder = 0
-  #         ),
-  #         QurvE:::updateResistantPopover(id = "number_of_bootstrappings_dr_growth_rerun_individual", title = HTML("<em>nboot.dr</em>"), content = "Optional: Define the number of bootstrap samples for EC50 estimation. Bootstrapping resamples the values in a dataset with replacement and performs a spline fit for each bootstrap sample to determine the EC50.")
-  #       ), #conditionalPanel(condition = 'input.dr_method_growth_rerun == "spline"')
-  #       footer=tagList(
-  #         fluidRow(
-  #           column(12,
-  #                  div(
-  #                    actionButton('submit.rerun.dr.spline.individual', 'Submit'),
-  #                    style="float:right"),
-  #                  div(
-  #                    modalButton('cancel'),
-  #                    style="float:right")
-  #
-  #           )
-  #         )
-  #       )
-  #     )
-  #   )
-  # })
-  #
-  #
-  # # Re-run selected linear fit with user-defined parameters upon click on 'submit'
-  # observeEvent(input$submit.rerun.dr.spline.individual, {
-  #   if(!is.null(results$growth$drFit)){
-  #
-  #     showModal(modalDialog("Performing dose-reponse analysis...", footer = NULL))
-  #
-  #     # store previous fit in memory
-  #     selected_vals_validate_growth$restore_dr_spline_individual <- results$growth$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_growth_plot == "1" || is.null(input$individual_plots_dose_response_growth_plot), 1, input$individual_plots_dose_response_growth_plot)]]
-  #
-  #     # Re-run fit and store in results object
-  #     gcTable <- results$growth$gcFit$gcTable
-  #     control <- results$growth$drFit$control
-  #     control_new <- control
-  #
-  #     # control_new$dr.method <- input$dr_method_growth_rerun_individual
-  #     control_new$dr.parameter <- input$response_parameter_growth_rerun_individual
-  #     control_new$smooth.dr <- input$smoothing_factor_growth_dr_rerun_individual
-  #     control_new$nboot.dr <- input$number_of_bootstrappings_dr_growth_rerun_individual
-  #     control_new$log.x.dr <- input$log_transform_concentration_growth_rerun_individual
-  #     control_new$log.y.dr <- input$log_transform_response_growth_rerun_individual
-  #
-  #     if(control_new$dr.method == "spline"){
-  #       try(
-  #         results$growth$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_growth_plot == "1" || is.null(input$individual_plots_dose_response_growth_plot), 1, input$individual_plots_dose_response_growth_plot)]] <-
-  #           growth.drFitSpline(conc =  results$growth$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_growth_plot == "1" || is.null(input$individual_plots_dose_response_growth_plot), 1, input$individual_plots_dose_response_growth_plot)]]$raw.conc,
-  #                              test = results$growth$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_growth_plot == "1" || is.null(input$individual_plots_dose_response_growth_plot), 1, input$individual_plots_dose_response_growth_plot)]]$raw.test,
-  #                              drID = results$growth$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_growth_plot == "1" || is.null(input$individual_plots_dose_response_growth_plot), 1, input$individual_plots_dose_response_growth_plot)]]$drID,
-  #                              control = control_new)
-  #       )
-  #     } else {
-  #       try(
-  #         results$growth$drFit$drFittedModels[[ifelse(input$individual_plots_dose_response_growth_plot_model == "1" || is.null(input$individual_plots_dose_response_growth_plot_model), 1, input$individual_plots_dose_response_growth_plot_model)]] <-
-  #           growth.drFitModel(conc =  results$growth$drFit$drFittedModels[[ifelse(input$individual_plots_dose_response_growth_plot_model == "1" || is.null(input$individual_plots_dose_response_growth_plot_model), 1, input$individual_plots_dose_response_growth_plot_model)]]$raw.conc,
-  #                              test = results$growth$drFit$drFittedModels[[ifelse(input$individual_plots_dose_response_growth_plot_model == "1" || is.null(input$individual_plots_dose_response_growth_plot_model), 1, input$individual_plots_dose_response_growth_plot_model)]]$raw.test,
-  #                              drID = results$growth$drFit$drFittedModels[[ifelse(input$individual_plots_dose_response_growth_plot_model == "1" || is.null(input$individual_plots_dose_response_growth_plot_model), 1, input$individual_plots_dose_response_growth_plot_model)]]$drID,
-  #                              control = control_new)
-  #       )
-  #     }
-  #
-  #
-  #     # Show [Restore fit] button
-  #     show("restore_dr_spline_individual")
-  #   }
-  #
-  #   removeModal()
-  # })
-  #
-  # # Restore previous linear fit upon click on [Restore Fit]
-  # observeEvent(input$restore_dr_spline_individual, {
-  #   # store previous fit from memory
-  #   results$growth$drFit$drFittedSplines[[ifelse(input$individual_plots_dose_response_growth_plot == "1" || is.null(input$individual_plots_dose_response_growth_plot), 1, input$individual_plots_dose_response_growth_plot)]] <- selected_vals_validate_growth$restore_dr_spline_individual
-  #   hide("restore_dr_spline_individual")
-  # })
 
 
   ### DR Plots (Bootstrap) ####
@@ -13183,7 +12982,7 @@ server <- function(input, output, session){
         plot.grid(results,
                   data.type = input$data_type_growth_grid_plot,
                   IDs = NULL,
-                  sort_by_ID = FALSE,
+                  sort_by_ID = input$order_matters_visualize_growth_grid,
                   names = input$select_samples_based_on_string_growth_grid_plot,
                   conc = input$select_samples_based_on_concentration_growth_grid_plot,
                   exclude.nm = input$exclude_samples_based_on_string_growth_grid_plot,
@@ -13441,7 +13240,6 @@ server <- function(input, output, session){
   observe({
     if (length(results$fluorescence$flFit)>1){
       if(input$data_type_fluorescence_group_plot == "raw") y_axis <- "Fluorescence"
-      # if(input$data_type_fluorescence_group_plot == "raw2") y_axis <- "Fluorescence 2"
       if(input$data_type_fluorescence_group_plot == "spline" && results$fluorescence$control$norm_fl && results$fluorescence$control$x_type != "growth"){
         y_axis <- "Normalized fluorescence"
       }
@@ -13451,9 +13249,7 @@ server <- function(input, output, session){
       if(input$data_type_fluorescence_group_plot == "spline" && !results$fluorescence$control$norm_fl){
         y_axis <- "Fluorescence"
       }
-      # if(input$data_type_fluorescence_group_plot == "spline2") y_axis <- "Fluorescence 2"
       if(input$data_type_fluorescence_group_plot == "norm.fl") y_axis <- "Normalized fluorescence"
-      # if(input$data_type_fluorescence_group_plot == "norm.fl2") y_axis <- "Normalized fluorescence 2"
     }
     else {
       y_axis <- ""
@@ -14764,7 +14560,7 @@ server <- function(input, output, session){
         plot.grid(results,
                   data.type = input$data_type_fluorescence_grid_plot,
                   IDs = NULL,
-                  sort_by_ID = FALSE,
+                  sort_by_ID = input$order_matters_visualize_fluorescence_grid,
                   names = input$select_samples_based_on_string_fluorescence_grid_plot,
                   conc = input$select_samples_based_on_concentration_fluorescence_grid_plot,
                   exclude.nm = input$exclude_samples_based_on_string_fluorescence_grid_plot,
@@ -15310,7 +15106,7 @@ server <- function(input, output, session){
                       choices = select_inputs_individual_plots_dose_response_fluorescence_plot_bt()
     )})
 
-  # Reports ####
+  # Report ####
   volumes <- getVolumes() # this makes the directory at the base of your computer.
 
   tinytex_package_installed <- requireNamespace("tinytex", quietly = TRUE)
@@ -15386,7 +15182,6 @@ server <- function(input, output, session){
   })
 
   ## Report Growth ####
-
 
   output$download_report_growth_pdf <- downloadHandler(
     filename = function() {
@@ -15629,11 +15424,6 @@ server <- function(input, output, session){
       q("no")
     })
   }
-
-  # Ensure that the application will stop the websocket server started by shiny::runApp() and the underlying R process when the browser window is closed.
-  # session$onSessionEnded(function() {
-  #   stopApp()
-  # })
 
 }
 
